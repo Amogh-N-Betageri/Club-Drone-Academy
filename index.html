@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Club Drone Academy | Master FPV Drone Engineering & Flight</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -586,6 +589,7 @@
     <button id="backBtn" onclick="navigate('home')" style="background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;cursor:pointer;display:none">← Syllabus</button>
     <a href="#home" style="text-decoration:none;color:var(--text-primary);font-weight:700;font-size:17px;white-space:nowrap;display:flex;align-items:center;gap:0.4rem" onclick="navigate('home')">
       <span>🚁</span> <span class="hidden sm:inline">Club Drone Academy</span>
+      <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34D399;margin-left:4px">v2.5 Live</span>
     </a>
     <div style="flex:1;display:flex;align-items:center;gap:0.75rem;min-width:0;justify-content:flex-end">
       
@@ -3131,22 +3135,36 @@ function getCh12Content() {
 // ==========================================
 function getChapterContentById(id) {
   let raw = "";
-  switch(id) {
-    case 'ch1': raw = getCh1Content(); break;
-    case 'ch2': raw = getCh2Content(); break;
-    case 'ch3': raw = getCh3Content(); break;
-    case 'ch4': raw = getCh4Content(); break;
-    case 'ch5': raw = getCh5Content(); break;
-    case 'ch6': raw = getCh6Content(); break;
-    case 'ch7': raw = getCh7Content(); break;
-    case 'ch8': raw = getCh8Content(); break;
-    case 'ch9': raw = getCh9Content(); break;
-    case 'ch10': raw = getCh10Content(); break;
-    case 'ch11': raw = getCh11Content(); break;
-    case 'ch12': raw = getCh12Content(); break;
-    default: return '<p>Chapter content not found.</p>';
+  try {
+    switch(id) {
+      case 'ch1': raw = getCh1Content(); break;
+      case 'ch2': raw = getCh2Content(); break;
+      case 'ch3': raw = getCh3Content(); break;
+      case 'ch4': raw = getCh4Content(); break;
+      case 'ch5': raw = getCh5Content(); break;
+      case 'ch6': raw = getCh6Content(); break;
+      case 'ch7': raw = getCh7Content(); break;
+      case 'ch8': raw = getCh8Content(); break;
+      case 'ch9': raw = getCh9Content(); break;
+      case 'ch10': raw = getCh10Content(); break;
+      case 'ch11': raw = getCh11Content(); break;
+      case 'ch12': raw = getCh12Content(); break;
+      default: return '<p>Chapter content not found.</p>';
+    }
+  } catch (err) {
+    console.error("Error generating chapter body for " + id + ":", err);
+    raw = '<div style="padding:2rem;color:#FDA4AF">Error generating chapter content: ' + err.message + '</div>';
   }
-  return raw + getQnaSectionHtml(id);
+
+  try {
+    if (typeof getQnaSectionHtml === 'function') {
+      raw += getQnaSectionHtml(id);
+    }
+  } catch (qnaErr) {
+    console.warn("Error generating QnA section for " + id + ":", qnaErr);
+  }
+
+  return raw;
 }
 
 function navigate(target) {
@@ -3155,7 +3173,9 @@ function navigate(target) {
     document.getElementById('page-chapter').classList.remove('active');
     document.getElementById('backBtn').style.display = 'none';
     activeChapterId = null;
-    window.location.hash = '#home';
+    if (window.location.hash !== '#home') {
+      window.location.hash = '#home';
+    }
   } else {
     const idx = CHAPTERS.findIndex(c => c.id === target);
     if (idx === -1) return;
@@ -3196,7 +3216,9 @@ function navigate(target) {
     // Complete Button
     updateCompleteBtnState();
 
-    window.location.hash = '#' + target;
+    if (window.location.hash !== '#' + target) {
+      window.location.hash = '#' + target;
+    }
     window.scrollTo(0, 0);
 
     // Initialize in-chapter widgets
@@ -3433,8 +3455,8 @@ function setCompTab(type, btn) {
     btn.parentElement.querySelectorAll('.seg-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
   }
-  btn.classList.add('active');
   const display = document.getElementById('compDisplay');
+  if (!display) return;
   if (type === 'fpv') {
     display.innerHTML = `
       <table class="data-table" style="margin:0">
@@ -3595,12 +3617,20 @@ function updatePhysicsCalc() {
 
 // CH4: Master Spec Builder
 function updateSpecBuilder() {
-  const frame = document.getElementById('specFrame').value;
-  const motor = document.getElementById('specMotor').value;
-  const prop = document.getElementById('specProp').value;
-  const esc = parseInt(document.getElementById('specEsc').value);
-  const batt = document.getElementById('specBatt').value;
-  const vtx = document.getElementById('specVtx').value;
+  const frameEl = document.getElementById('specFrame');
+  const motorEl = document.getElementById('specMotor');
+  const propEl = document.getElementById('specProp');
+  const escEl = document.getElementById('specEsc');
+  const battEl = document.getElementById('specBatt');
+  const vtxEl = document.getElementById('specVtx');
+  if (!frameEl || !motorEl || !propEl || !escEl || !battEl || !vtxEl) return;
+
+  const frame = frameEl.value;
+  const motor = motorEl.value;
+  const prop = propEl.value;
+  const esc = parseInt(escEl.value) || 50;
+  const batt = battEl.value || '6s_1100';
+  const vtx = vtxEl.value || 'analog';
 
   let baseWeight = 0;
   if (frame === 'freestyle_5') baseWeight += 125;
@@ -3637,29 +3667,31 @@ function updateSpecBuilder() {
   const totalThrust = (motor === '2207_2100' ? 1850 : 1650) * 4;
   const twr = (totalThrust / baseWeight).toFixed(1);
 
-  document.getElementById('specAuw').textContent = baseWeight + 'g';
-  document.getElementById('specPeakAmp').textContent = peakAmp.toFixed(1) + 'A';
-  document.getElementById('specEscMargin').textContent = (escMargin > 0 ? '+' : '') + escMargin + '%';
-  document.getElementById('specTwr').textContent = twr + ' : 1';
-
-  const marginEl = document.getElementById('specEscMargin');
-  if (escMargin < 15) {
-    marginEl.style.color = 'var(--accent-rose)';
-  } else if (escMargin < 25) {
-    marginEl.style.color = 'var(--accent-amber)';
-  } else {
-    marginEl.style.color = 'var(--accent-emerald)';
+  const auwEl = document.getElementById('specAuw');
+  if (auwEl) auwEl.textContent = baseWeight + 'g';
+  const ampEl = document.getElementById('specPeakAmp');
+  if (ampEl) ampEl.textContent = peakAmp.toFixed(1) + 'A';
+  const escMarginEl = document.getElementById('specEscMargin');
+  if (escMarginEl) {
+    escMarginEl.textContent = (escMargin > 0 ? '+' : '') + escMargin + '%';
+    if (escMargin < 15) escMarginEl.style.color = 'var(--accent-rose)';
+    else if (escMargin < 25) escMarginEl.style.color = 'var(--accent-amber)';
+    else escMarginEl.style.color = 'var(--accent-emerald)';
   }
+  const twrEl = document.getElementById('specTwr');
+  if (twrEl) twrEl.textContent = twr + ' : 1';
 
   // Rationale text
+  const is6S = batt && batt.startsWith('6s');
   let rationale = `
     <strong>Architecture Analysis & Compatibility Report:</strong><br>
     • <strong>Motor/Prop Harmony:</strong> Selected motor stator volume reliably drives the selected propeller load without thermal saturation.<br>
-    • <strong>Voltage System:</strong> ${batt.startsWith('6s') ? '6S Voltage reduces resistive heat dissipation ($I^2R$) by over 50% compared to legacy 4S systems.' : 'Legacy 4S configuration draws higher current; ensure heavy battery leads.'}<br>
+    • <strong>Voltage System:</strong> ${is6S ? '6S Voltage reduces resistive heat dissipation ($I^2R$) by over 50% compared to legacy 4S systems.' : 'Legacy 4S configuration draws higher current; ensure heavy battery leads.'}<br>
     • <strong>ESC Headroom:</strong> ${escMargin >= 25 ? 'Outstanding +25% safety margin protects MOSFET gates against heat failure.' : '<span style="color:var(--accent-rose)">Warning: Low ESC headroom. Upgrade to 55A+ rating for high throttle safety.</span>'}<br>
     • <strong>Weight-to-Power Balance:</strong> ${twr >= 8 ? 'Competition-grade punchout power with razor-sharp acrobatic agility.' : 'Predictable, smooth freestyle cruise profile.'}
   `;
-  document.getElementById('specRationaleBox').innerHTML = rationale;
+  const rationaleBox = document.getElementById('specRationaleBox');
+  if (rationaleBox) rationaleBox.innerHTML = rationale;
 }
 
 // CH5: Motor Explorer
@@ -3777,15 +3809,20 @@ function updateBattSim() {
 // CH11: PID Step Response Canvas
 function drawPidCanvas() {
   const canvas = document.getElementById('pidCanvas');
-  if (!canvas) return;
+  const pInput = document.getElementById('pidPInput');
+  const dInput = document.getElementById('pidDInput');
+  if (!canvas || !canvas.getContext || !pInput || !dInput) return;
   const ctx = canvas.getContext('2d');
+  if (!ctx) return;
   const w = canvas.width;
   const h = canvas.height;
 
-  const p = parseFloat(document.getElementById('pidPInput').value);
-  const d = parseFloat(document.getElementById('pidDInput').value);
-  document.getElementById('pidPVal').textContent = p;
-  document.getElementById('pidDVal').textContent = d;
+  const p = parseFloat(pInput.value) || 45;
+  const d = parseFloat(dInput.value) || 35;
+  const pVal = document.getElementById('pidPVal');
+  if (pVal) pVal.textContent = p;
+  const dVal = document.getElementById('pidDVal');
+  if (dVal) dVal.textContent = d;
 
   ctx.clearRect(0, 0, w, h);
 
@@ -3816,7 +3853,6 @@ function drawPidCanvas() {
   ctx.fillText('TARGET SETPOINT (Stick Command)', 50, targetY - 8);
 
   // Simulate 2nd-order dynamic system
-  // zeta = damping ratio ~ d / (2 * sqrt(p))
   const omega = Math.sqrt(p * 0.8);
   const zeta = (d * 0.12) / (2 * Math.sqrt(p * 0.08) + 0.001);
 
@@ -3847,12 +3883,14 @@ function drawPidCanvas() {
 
   // Status message
   const statusEl = document.getElementById('pidResponseStatus');
-  if (zeta < 0.5) {
-    statusEl.innerHTML = '<span style="color:var(--accent-rose)">⚠ Underdamped (Oscillatory): P is too high relative to D. Severe overshoot and ringing will create motor vibration.</span>';
-  } else if (zeta > 1.2) {
-    statusEl.innerHTML = '<span style="color:var(--accent-amber)">⚠ Overdamped (Sluggish): D is too high. Control feels mushy and motors will run hot.</span>';
-  } else {
-    statusEl.innerHTML = '<span style="color:var(--accent-emerald)">✓ Critically Damped: Optimal tuning. Instantaneous rise time with negligible overshoot.</span>';
+  if (statusEl) {
+    if (zeta < 0.5) {
+      statusEl.innerHTML = '<span style="color:var(--accent-rose)">⚠ Underdamped (Oscillatory): P is too high relative to D. Severe overshoot and ringing will create motor vibration.</span>';
+    } else if (zeta > 1.2) {
+      statusEl.innerHTML = '<span style="color:var(--accent-amber)">⚠ Overdamped (Sluggish): D is too high. Control feels mushy and motors will run hot.</span>';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--accent-emerald)">✓ Critically Damped: Optimal tuning. Instantaneous rise time with negligible overshoot.</span>';
+    }
   }
 }
 
@@ -3903,10 +3941,12 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // Immediate execution fallback
-handleResize();
-handleHashRoute();
-updateCourseProgress();
-checkLogin();
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  handleResize();
+  handleHashRoute();
+  updateCourseProgress();
+  checkLogin();
+}
 </script>
 </body>
 </html>
