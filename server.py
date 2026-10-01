@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Club Drone Academy - Backend API & Static Server
+ARC Drone - Backend API & Static Server
 Provides SQLite database persistence for student logins, progress tracking,
 lesson completion, and Q&A exam scores, plus serves the web apps.
 """
@@ -269,7 +269,7 @@ class ReusableTCPServer(socketserver.TCPServer):
 def run_server():
     init_db()
     with ReusableTCPServer(("", PORT), DroneAcademyHandler) as httpd:
-        print(f"[🚀] Club Drone Academy server running at: http://localhost:{PORT}")
+        print(f"[🚀] ARC Drone server running at: http://localhost:{PORT}")
         print(f"[📖] Student App: http://localhost:{PORT}/index.html")
         print(f"[📊] Admin Dashboard: http://localhost:{PORT}/admin.html")
         try:

@@ -22,7 +22,7 @@ def get_full_html():
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Club Drone Academy | Master FPV Drone Engineering & Flight</title>
+<title>ARC Drone | Master FPV Drone Engineering & Flight</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -575,7 +575,7 @@ def get_full_html():
 <div class="modal-overlay" id="loginModal">
   <div class="modal-box" style="text-align:center">
     <div style="font-size:38px;margin-bottom:0.5rem">🚁</div>
-    <h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0.25rem">Welcome to Club Drone Academy</h2>
+    <h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0.25rem">Welcome to ARC Drone</h2>
     <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">
       Sign in with your name and email to track your lesson progress, save Q&A scores, and sync with the instructor database.
     </p>
@@ -604,7 +604,7 @@ def get_full_html():
     <button id="menuBtn" onclick="openDrawer()" style="background:none;border:none;color:var(--text-primary);font-size:22px;cursor:pointer;display:none" title="Open Syllabus">☰</button>
     <button id="backBtn" onclick="navigate('home')" style="background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;cursor:pointer;display:none">← Syllabus</button>
     <a href="#home" style="text-decoration:none;color:var(--text-primary);font-weight:700;font-size:17px;white-space:nowrap;display:flex;align-items:center;gap:0.4rem" onclick="navigate('home')">
-      <span>🚁</span> <span class="hidden sm:inline">Club Drone Academy</span>
+      <span>🚁</span> <span class="hidden sm:inline">ARC Drone</span>
       <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34D399;margin-left:4px">v2.5 Live</span>
     </a>
     <div style="flex:1;display:flex;align-items:center;gap:0.75rem;min-width:0;justify-content:flex-end">
@@ -628,7 +628,7 @@ def get_full_html():
         <span>⚡</span> Interactive FPV Robotics & Flight Engineering
       </div>
       <h1 style="font-size:36px;font-weight:800;margin-bottom:0.75rem;letter-spacing:-0.02em;background:linear-gradient(135deg,#60A5FA,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
-        Club Drone Academy
+        ARC Drone
       </h1>
       <p style="color:var(--text-secondary);font-size:17px;max-width:580px;margin:0 auto">
         Master every aspect of FPV quadcopters: aerodynamics, electronics selection, Newtonian physics, Betaflight logic, step-by-step soldering, and race strategy.

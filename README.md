@@ -1,9 +1,9 @@
-# 🛸 Club Drone Academy
+# 🛸 ARC Drone
 
 > **Modern Interactive FPV Robotics, Aeronautical Engineering & Flight Mastery Platform**  
 > *"You're gonna learn something today!"* — Inspired by Joshua Bardwell, Oscar Liang, and the open-source FPV multirotor engineering community.
 
-Welcome to **Club Drone Academy**, a clean, modern, multi-page interactive learning application inspired by Brilliant.org, Khan Academy, and Codecademy. It teaches every aspect of FPV quadcopters: piloting dynamics, size classes, Newtonian flight physics, component selection with real math, electronics, step-by-step soldering, Betaflight logic, and race competition execution.
+Welcome to **ARC Drone**, a clean, modern, multi-page interactive learning application inspired by Brilliant.org, Khan Academy, and Codecademy. It teaches every aspect of FPV quadcopters: piloting dynamics, size classes, Newtonian flight physics, component selection with real math, electronics, step-by-step soldering, Betaflight logic, and race competition execution.
 
 ---
 
