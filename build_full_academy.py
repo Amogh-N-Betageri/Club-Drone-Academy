@@ -855,15 +855,15 @@ def get_full_html():
     <div style="text-align:left;display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem">
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.35rem">STUDENT FULL NAME</label>
-        <input type="text" id="loginName" class="spec-select" placeholder="e.g. Alex Sharma">
+        <input type="text" id="loginName" class="spec-select" placeholder="e.g. Alex Sharma" onkeydown="if(event.key==='Enter')document.getElementById('loginEmail').focus()">
       </div>
       <div>
         <label style="font-size:12px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.35rem">STUDENT EMAIL / ID</label>
-        <input type="email" id="loginEmail" class="spec-select" placeholder="e.g. alex@university.edu">
+        <input type="email" id="loginEmail" class="spec-select" placeholder="e.g. alex@university.edu" onkeydown="if(event.key==='Enter')submitLogin()">
       </div>
     </div>
-    <button class="btn-primary" style="width:100%;justify-content:center" onclick="submitLogin()">
-      Start Flight Training →
+    <button class="btn-primary" style="width:100%;justify-content:center;font-size:16px;padding:0.9rem 1.75rem" onclick="submitLogin()">
+      🚁 Start Flight Training
     </button>
 
   </div>
@@ -876,7 +876,7 @@ def get_full_html():
     <button id="backBtn" onclick="navigate('home')" style="background:none;border:none;color:var(--text-secondary);font-size:15px;font-weight:600;cursor:pointer;display:none">← Syllabus</button>
     <a href="#home" style="text-decoration:none;color:var(--text-primary);font-weight:700;font-size:17px;white-space:nowrap;display:flex;align-items:center;gap:0.4rem" onclick="navigate('home')">
       <span>🚁</span> <span class="hidden sm:inline">ARC Drone</span>
-      <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34D399;margin-left:4px">v2.5 Live</span>
+      <span class="header-brand-badge" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);color:#34D399;margin-left:4px">v3.0</span>
     </a>
     <div style="flex:1;display:flex;align-items:center;gap:0.75rem;min-width:0;justify-content:flex-end">
       
@@ -901,9 +901,15 @@ def get_full_html():
       <h1 class="hero-headline" style="font-size:36px;font-weight:800;margin-bottom:0.75rem;letter-spacing:-0.02em;background:linear-gradient(135deg,#60A5FA,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
         ARC Drone
       </h1>
-      <p class="hero-subtitle" style="color:var(--text-secondary);font-size:17px;max-width:580px;margin:0 auto">
+      <p class="hero-subtitle" style="color:var(--text-secondary);font-size:17px;max-width:580px;margin:0 auto 1.5rem">
         Master every aspect of FPV quadcopters: aerodynamics, electronics selection, Newtonian physics, Betaflight logic, step-by-step soldering, and race strategy.
       </p>
+      <div style="display:inline-flex;flex-wrap:wrap;gap:0.65rem;justify-content:center">
+        <span style="display:inline-flex;align-items:center;gap:0.35rem;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:999px;padding:0.3rem 0.85rem;font-size:13px;font-weight:600;color:#93C5FD">📚 12 Lessons</span>
+        <span style="display:inline-flex;align-items:center;gap:0.35rem;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:999px;padding:0.3rem 0.85rem;font-size:13px;font-weight:600;color:#A5B4FC">📺 26 Videos</span>
+        <span style="display:inline-flex;align-items:center;gap:0.35rem;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:999px;padding:0.3rem 0.85rem;font-size:13px;font-weight:600;color:#6EE7B7">⚙️ 12 Widgets</span>
+        <span style="display:inline-flex;align-items:center;gap:0.35rem;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);border-radius:999px;padding:0.3rem 0.85rem;font-size:13px;font-weight:600;color:#FCD34D">📝 24 Q&amp;A Checks</span>
+      </div>
     </div>
 
     <!-- Overall Progress Card -->
@@ -1853,7 +1859,8 @@ function getCh2Content() {
 
   <p>Multirotor drones are classified by the maximum diameter propeller their arms can physically swing without collision:</p>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Class</th><th>Prop Size</th><th>Battery</th><th>All-Up Weight</th><th>Discipline & Characteristics</th></tr>
     </thead>
@@ -1895,6 +1902,7 @@ function getCh2Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -1966,7 +1974,8 @@ function getCh2Content() {
 
 <div class="ch-section">
   <h2>Benchmark 5-Inch Frames</h2>
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Frame</th><th>Weight</th><th>Arm Thickness</th><th>Mounting Stacks</th><th>Distinguishing Advantage</th></tr>
     </thead>
@@ -1994,6 +2003,7 @@ function getCh2Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 `;
 }
@@ -2216,7 +2226,8 @@ function getCh4Content() {
     </div>
   </div>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Component</th><th>Recommended 5" 6S Spec</th><th>Why This Exact Spec is Chosen</th></tr>
     </thead>
@@ -2268,6 +2279,7 @@ function getCh4Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -2408,7 +2420,8 @@ function getCh5Content() {
 
   <p>Motor sizing is expressed as a 4-digit number: <strong>2207</strong> = 22mm Stator Diameter × 7mm Stator Height:</p>
   <div class="formula-card">Stator Volume = π × (Diameter / 2)² × Height</div>
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Stator</th><th>Diameter</th><th>Height</th><th>Volume</th><th>Electromechanical Characteristics</th></tr>
     </thead>
@@ -2436,6 +2449,7 @@ function getCh5Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -2681,7 +2695,8 @@ function getCh7Content() {
     </div>
   </div>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Firmware</th><th>Architecture</th><th>Capabilities</th></tr>
     </thead>
@@ -2698,6 +2713,7 @@ function getCh7Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
   <h3>Why Bidirectional DShot is Essential</h3>
@@ -2947,7 +2963,8 @@ function getCh9Content() {
 
   <p>Lithium Polymer (LiPo) batteries use lithium cobalt oxide cathodes and graphite anodes. Each cell has strict physical voltage boundaries:</p>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Cell State</th><th>Voltage per Cell</th><th>6S Pack Voltage</th><th>Chemical Consequence</th></tr>
     </thead>
@@ -2978,6 +2995,7 @@ function getCh9Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -3080,7 +3098,8 @@ function getCh10Content() {
 
   <p>Your video link is your eyes in the sky. Four competing transmission systems dominate the FPV landscape:</p>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>System</th><th>Resolution</th><th>Latency</th><th>Degradation Behavior</th><th>Ecosystem Cost</th></tr>
     </thead>
@@ -3115,6 +3134,7 @@ function getCh10Content() {
       </tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -3326,7 +3346,8 @@ function getCh12Content() {
     </p>
   </div>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Race Channel</th><th>Frequency</th><th>Spacing Rule</th></tr>
     </thead>
@@ -3341,6 +3362,7 @@ function getCh12Content() {
       <tr><td><strong>RaceBand 8 (R8)</strong></td><td>5917 MHz</td></tr>
     </tbody>
   </table>
+</div>
 </div>
 
 <div class="ch-section">
@@ -3568,7 +3590,16 @@ function updateCourseProgress() {
   const homeBar = document.getElementById('homeProgressBar');
   if (homeBar) homeBar.style.width = pct + '%';
   const homeTitle = document.getElementById('homeProgressTitle');
-  if (homeTitle) homeTitle.textContent = completed + ' of ' + total + ' Chapters Mastered';
+  if (homeTitle) {
+    let motivator = '';
+    if (completed === 0) motivator = 'Ready for takeoff! Choose a lesson below.';
+    else if (pct < 25) motivator = `${completed} of ${total} Chapters Complete — Just getting started! 🛫`;
+    else if (pct < 50) motivator = `${completed} of ${total} Chapters Complete — Building momentum! ⚡`;
+    else if (pct < 75) motivator = `${completed} of ${total} Chapters Complete — Halfway through! 🚀`;
+    else if (pct < 100) motivator = `${completed} of ${total} Chapters Complete — Almost there! 🔥`;
+    else motivator = '🎓 All 12 Chapters Mastered! Certified FPV Engineer!';
+    homeTitle.textContent = motivator;
+  }
   const homePct = document.getElementById('homeProgressPercent');
   if (homePct) homePct.textContent = pct + '%';
 
@@ -3583,13 +3614,13 @@ function renderHomeChapterList() {
   list.innerHTML = CHAPTERS.map((ch, idx) => {
     const isDone = !!progress[ch.id];
     return `
-      <div class="chapter-card ${isDone ? 'completed' : ''}" onclick="navigate('${ch.id}')">
-        <div class="chapter-icon" style="background:${ch.color}22">
+      <div class="chapter-card ${isDone ? 'completed' : ''}" onclick="navigate('${ch.id}')" style="border-left: 4px solid ${isDone ? 'var(--accent-emerald)' : ch.color + '88'}">
+        <div class="chapter-icon" style="background:${ch.color}22;border:1px solid ${ch.color}44">
           <span>${isDone ? '✓' : ch.icon}</span>
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem">
-            <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em">
+            <div style="font-size:11px;font-weight:700;color:${ch.color};text-transform:uppercase;letter-spacing:0.06em">
               CHAPTER ${idx + 1}
             </div>
             <span style="font-size:12px;color:var(--text-muted);white-space:nowrap">${ch.time}</span>
@@ -3597,7 +3628,7 @@ function renderHomeChapterList() {
           <h3 style="font-size:16px;font-weight:700;color:var(--text-primary);margin:0.15rem 0">${ch.title}</h3>
           <p style="font-size:13px;color:var(--text-secondary);margin:0">${ch.subtitle}</p>
         </div>
-        <div style="color:var(--text-muted);font-size:18px">→</div>
+        <div style="color:${ch.color};font-size:18px;opacity:0.7">→</div>
       </div>
     `;
   }).join('');
@@ -3750,6 +3781,7 @@ function setCompTab(type, btn) {
   if (!display) return;
   if (type === 'fpv') {
     display.innerHTML = `
+      <div class="table-container">
       <table class="data-table" style="margin:0">
         <tbody>
           <tr><td><strong>Top Airspeed</strong></td><td style="color:var(--accent-emerald);font-weight:700">140 – 210 km/h (85 – 130 mph)</td></tr>
@@ -3761,7 +3793,7 @@ function setCompTab(type, btn) {
           <tr><td><strong>Flight Duration</strong></td><td>3.5 – 6.5 minutes per battery pack</td></tr>
         </tbody>
       </table>
-</div>
+      </div>
     `;
   } else {
     display.innerHTML = `
