@@ -28,7 +28,7 @@ The application is deployed live and hosted globally on GitHub Pages:
 ### 1. Isolated Student Application (`index.html`)
 - All references and links to the Instructor Dashboard have been **completely removed** from the student app.
 - Students cannot navigate to or discover the admin portal from the learning interface.
-- Includes a clean student sign-in modal on startup to track their individual lesson completion and Q&A exam scores.
+- **Mandatory Student Sign-in**: Guest login has been completely removed. Every student must register with their Full Name and Email address to track individual lesson completion and Q&A exam scores in the database.
 
 ### 2. Password-Protected Instructor Command Center (`admin.html`)
 - The instructor portal is protected behind an **Administrator Verification Gate**.

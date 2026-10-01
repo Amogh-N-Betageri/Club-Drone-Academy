@@ -576,9 +576,7 @@
     <button class="btn-primary" style="width:100%;justify-content:center" onclick="submitLogin()">
       Start Flight Training →
     </button>
-    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center;font-size:12px">
-      <button onclick="guestContinue()" style="background:none;border:none;color:var(--text-muted);cursor:pointer">Continue as Guest</button>
-    </div>
+
   </div>
 </div>
 
@@ -1193,7 +1191,9 @@ function selectQnaOption(chId, qIdx, optIdx) {
 }
 
 function checkLogin() {
-  if (!currentUser) {
+  if (!currentUser || !currentUser.email || currentUser.email.includes('guest@') || currentUser.email === 'guest') {
+    currentUser = null;
+    localStorage.removeItem('droneAcademy_activeUser');
     document.getElementById('loginModal').classList.add('open');
   } else {
     updateHeaderProfile();
@@ -1207,6 +1207,10 @@ async function submitLogin() {
 
   if (!name || !email) {
     alert('Please enter both your name and email to proceed.');
+    return;
+  }
+  if (!email.includes('@') || !email.includes('.')) {
+    alert('Please enter a valid email address.');
     return;
   }
 
@@ -1245,12 +1249,7 @@ async function submitLogin() {
   syncWithDatabase();
 }
 
-function guestContinue() {
-  currentUser = { name: 'Guest Student', email: 'guest@droneacademy.local', loggedInAt: new Date().toISOString() };
-  localStorage.setItem('droneAcademy_activeUser', JSON.stringify(currentUser));
-  document.getElementById('loginModal').classList.remove('open');
-  updateHeaderProfile();
-}
+// Guest login removed: mandatory student name and email
 
 function promptSwitchUser() {
   const name = currentUser ? currentUser.name : '';
@@ -1719,18 +1718,18 @@ function getCh3Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/SpuXqNakP2A" 
-              title="How Quadcopters Fly & Momentum Dynamics" 
+      <iframe src="https://www.youtube-nocookie.com/embed/J4RkNxjpKy0" 
+              title="How Drones Fly and Maneuver – Multirotor Physics & Aerodynamics" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
     </div>
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Quadcopters Fly & Momentum Dynamics</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Applied Pi</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Drones Fly and Maneuver – Multirotor Physics & Aerodynamics</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=SpuXqNakP2A" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=J4RkNxjpKy0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
@@ -1770,18 +1769,18 @@ function getCh3Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/6t4gS-HfqT0" 
-              title="Thrust to Weight Ratio for FPV Drones - How Much Power Do You Need?" 
+      <iframe src="https://www.youtube-nocookie.com/embed/KgTN_VuKORs" 
+              title="Thrust to Weight Ratios – A Drone Design Foundation & Power Sizing" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
     </div>
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Thrust to Weight Ratio for FPV Drones - How Much Power Do You Need?</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • The Drone Dojo</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Thrust to Weight Ratios – A Drone Design Foundation & Power Sizing</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=6t4gS-HfqT0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=KgTN_VuKORs" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
@@ -1874,8 +1873,8 @@ function getCh4Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/SC556vEMoYs" 
-              title="How to Choose Parts for a 5-Inch FPV Drone Kit" 
+      <iframe src="https://www.youtube-nocookie.com/embed/89heW93J8rw" 
+              title="What Parts Do I Need For My First 5-Inch FPV Drone Build?" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
@@ -1883,9 +1882,9 @@ function getCh4Content() {
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Choose Parts for a 5-Inch FPV Drone Kit</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">What Parts Do I Need For My First 5-Inch FPV Drone Build?</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=SC556vEMoYs" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=89heW93J8rw" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
@@ -2244,18 +2243,18 @@ function getCh6Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/p09s3f9K6s0" 
-              title="How to Choose FPV Drone Propellers: Pitch and Diameter" 
+      <iframe src="https://www.youtube-nocookie.com/embed/epJ6L9MaXOQ" 
+              title="How to Choose Props for Your Quadcopter: Pitch, Diameter & Aerodynamics" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
     </div>
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
-        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Choose FPV Drone Propellers: Pitch and Diameter</div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Chris Rosser</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Choose Props for Your Quadcopter: Pitch, Diameter & Aerodynamics</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=p09s3f9K6s0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=epJ6L9MaXOQ" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
@@ -2898,8 +2897,8 @@ function getCh11Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/kfhHecJsS3Y" 
-              title="Build an FPV Drone Step by Step - Soldering & Assembly" 
+      <iframe src="https://www.youtube-nocookie.com/embed/GoPT69y98pY" 
+              title="Masterclass: How to Solder for FPV Drones Step by Step" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
@@ -2907,9 +2906,9 @@ function getCh11Content() {
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Build an FPV Drone Step by Step - Soldering & Assembly</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Masterclass: How to Solder for FPV Drones Step by Step</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=kfhHecJsS3Y" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=GoPT69y98pY" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
@@ -3057,8 +3056,8 @@ function getCh12Content() {
 
   <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
     <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-      <iframe src="https://www.youtube-nocookie.com/embed/O5ngG--_pKo" 
-              title="Failsafe Setup and Test in Betaflight to Prevent Flyaways" 
+      <iframe src="https://www.youtube-nocookie.com/embed/Il965t3Yp8g" 
+              title="Betaflight 4.3 Failsafe Tab | Complete Walkthrough & Safety Testing" 
               style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen></iframe>
@@ -3066,9 +3065,9 @@ function getCh12Content() {
     <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
-        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Failsafe Setup and Test in Betaflight to Prevent Flyaways</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Betaflight 4.3 Failsafe Tab | Complete Walkthrough & Safety Testing</div>
       </div>
-      <a href="https://www.youtube.com/watch?v=O5ngG--_pKo" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+      <a href="https://www.youtube.com/watch?v=Il965t3Yp8g" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
         Watch on YouTube ↗
       </a>
     </div>
