@@ -1102,139 +1102,6 @@ const CHAPTER_QNA = {
 let currentUser = JSON.parse(localStorage.getItem('droneAcademy_activeUser') || 'null');
 let userQnaScores = JSON.parse(localStorage.getItem('clubDroneAcademy_qna') || '{}');
 
-function getVideoSectionHtml(id) {
-  const vid = CHAPTER_VIDEOS[id];
-  if (!vid) return '';
-  return `
-    <div class="ch-section">
-      <h2>📺 Video Tutorial</h2>
-      <div style="background:#0D1424;border:1px solid rgba(99,102,241,0.25);border-radius:18px;overflow:hidden;margin:1.25rem 0;box-shadow:0 8px 30px rgba(0,0,0,0.35)">
-        <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
-          <iframe src="https://www.youtube-nocookie.com/embed/${vid.id}" 
-                  title="${vid.title}" 
-                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                  allowfullscreen></iframe>
-        </div>
-        <div style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
-          <div>
-            <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase">AUTHORITATIVE TUTORIAL • ${vid.author}</div>
-            <div style="font-size:14px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">${vid.title}</div>
-          </div>
-          <a href="https://www.youtube.com/watch?v=${vid.id}" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.4rem 0.85rem">
-            Watch on YouTube ↗
-          </a>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function getQnaSectionHtml(id) {
-  const questions = CHAPTER_QNA[id];
-  if (!questions || questions.length === 0) return '';
-
-  const saved = userQnaScores[id] || { answers: {} };
-
-  return `
-    <div class="ch-section">
-      <h2>📝 Lesson Knowledge Check & Q&A</h2>
-      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:1rem">
-        Answer the following technical questions to verify your comprehension. Your answers are automatically saved to your profile:
-      </p>
-
-      <div class="widget-card" style="margin-top:0.5rem">
-        <div class="widget-header">
-          <span class="widget-title">🧠 Examination & Mastery Check</span>
-          <span style="font-size:12px;color:var(--text-muted)" id="qnaScoreBadge_${id}">
-            ${saved.score !== undefined ? `Score: ${saved.score} / ${questions.length}` : `2 Questions`}
-          </span>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:1.5rem">
-          ${questions.map((q, qIdx) => {
-            const selectedOpt = saved.answers ? saved.answers[qIdx] : undefined;
-            return `
-              <div>
-                <div style="font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:0.75rem">
-                  ${qIdx + 1}. ${q.q}
-                </div>
-                <div id="qnaOptions_${id}_${qIdx}">
-                  ${q.options.map((opt, optIdx) => {
-                    let optClass = 'qna-opt';
-                    if (selectedOpt !== undefined) {
-                      if (optIdx === q.answer) optClass += ' correct';
-                      else if (selectedOpt === optIdx) optClass += ' wrong';
-                    }
-                    return `
-                      <div class="${optClass}" onclick="selectQnaOption('${id}', ${qIdx}, ${optIdx})">
-                        <span style="font-weight:600;margin-right:0.4rem">${String.fromCharCode(65 + optIdx)}.</span> ${opt}
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
-                <div id="qnaFeedback_${id}_${qIdx}" style="font-size:12px;margin-top:0.4rem;${selectedOpt !== undefined ? 'display:block' : 'display:none'}">
-                  <div style="padding:0.6rem 0.85rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:var(--text-secondary)">
-                    <strong>💡 Explanation:</strong> ${q.explanation}
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function selectQnaOption(chId, qIdx, optIdx) {
-  const questions = CHAPTER_QNA[chId];
-  if (!questions) return;
-  const q = questions[qIdx];
-
-  if (!userQnaScores[chId]) {
-    userQnaScores[chId] = { answers: {}, score: 0, total: questions.length };
-  }
-
-  userQnaScores[chId].answers[qIdx] = optIdx;
-
-  // Recalculate chapter score
-  let correctCount = 0;
-  questions.forEach((question, idx) => {
-    if (userQnaScores[chId].answers[idx] === question.answer) {
-      correctCount++;
-    }
-  });
-  userQnaScores[chId].score = correctCount;
-  userQnaScores[chId].total = questions.length;
-
-  localStorage.setItem('clubDroneAcademy_qna', JSON.stringify(userQnaScores));
-
-  // Update UI options
-  const optContainer = document.getElementById(`qnaOptions_${chId}_${qIdx}`);
-  if (optContainer) {
-    const options = optContainer.querySelectorAll('.qna-opt');
-    options.forEach((el, i) => {
-      el.classList.remove('correct', 'wrong');
-      if (i === q.answer) el.classList.add('correct');
-      else if (i === optIdx) el.classList.add('wrong');
-    });
-  }
-
-  // Show feedback
-  const feedbackEl = document.getElementById(`qnaFeedback_${chId}_${qIdx}`);
-  if (feedbackEl) feedbackEl.style.display = 'block';
-
-  // Update score badge
-  const badge = document.getElementById(`qnaScoreBadge_${chId}`);
-  if (badge) badge.textContent = `Score: ${correctCount} / ${questions.length}`;
-
-  syncWithDatabase();
-}
-
-// ==========================================
-// USER LOGIN & DATABASE SYNCHRONIZATION
-// ==========================================
 function checkLogin() {
   if (!currentUser) {
     document.getElementById('loginModal').classList.add('open');
@@ -1444,6 +1311,26 @@ function getCh1Content() {
 
 <div class="ch-section">
   <h2>Flight Stabilization Modes: Angle vs Acro</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/fiUSJgQOkOA" 
+              title="Should I Learn Acro or Angle First As A New FPV Pilot?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Should I Learn Acro or Angle First As A New FPV Pilot?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=fiUSJgQOkOA" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Betaflight supports three fundamental flight stabilization algorithms:</p>
   <table class="data-table">
     <thead>
@@ -1525,6 +1412,26 @@ function getCh1Content() {
 
 <div class="ch-section">
   <h2>The Simulator Mastery Roadmap</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/SpuXqNakP2A" 
+              title="Learn to Fly an FPV Drone TODAY (Beginner Simulator Guide)" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Learn to Fly an FPV Drone TODAY (Beginner Simulator Guide)</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=SpuXqNakP2A" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The smartest and cheapest way to enter FPV is to purchase your radio transmitter first (e.g., RadioMaster Pocket or Boxer) and plug it directly into your PC via USB as a joystick controller. Fly in a realistic simulator before spending a single rupee on drone hardware:</p>
   <ul>
     <li><strong>Hours 0 – 3:</strong> Throttle management. Practice hovering smoothly in Acro mode without bouncing off the ground or shooting into the sky.</li>
@@ -1543,6 +1450,26 @@ function getCh2Content() {
   return `
 <div class="ch-section">
   <h2>FPV Drone Size Classes</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/SC556vEMoYs" 
+              title="Sub-250g or 5 Inch FPV Drone Kit? Which To Get?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Sub-250g or 5 Inch FPV Drone Kit? Which To Get?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=SC556vEMoYs" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Multirotor drones are classified by the maximum diameter propeller their arms can physically swing without collision:</p>
 
   <table class="data-table">
@@ -1591,6 +1518,26 @@ function getCh2Content() {
 
 <div class="ch-section">
   <h2>Airframe Geometry & Dynamics</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/rzpizzr3SH0" 
+              title="What Downsides Do Deadcat Frames Actually Have? Frame Geometry" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">What Downsides Do Deadcat Frames Actually Have? Frame Geometry</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=rzpizzr3SH0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The spatial geometry of the frame arms determines moment of inertia across the roll and pitch axes and dictates whether propellers appear in your HD camera video:</p>
 
   <div class="widget-card">
@@ -1677,6 +1624,26 @@ function getCh3Content() {
   return `
 <div class="ch-section">
   <h2>Newton's Laws Applied to Multirotors</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/SpuXqNakP2A" 
+              title="How Quadcopters Fly & Momentum Dynamics" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Quadcopters Fly & Momentum Dynamics</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=SpuXqNakP2A" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Every maneuver performed by an FPV drone is governed by classical Newtonian mechanics and momentum conservation:</p>
   
   <div style="display:grid;gap:1rem;margin:1.25rem 0">
@@ -1708,6 +1675,26 @@ function getCh3Content() {
 
 <div class="ch-section">
   <h2>Thrust-to-Weight Ratio (TWR) Formula</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/6t4gS-HfqT0" 
+              title="Thrust to Weight Ratio for FPV Drones - How Much Power Do You Need?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Thrust to Weight Ratio for FPV Drones - How Much Power Do You Need?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=6t4gS-HfqT0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <div class="formula-card">TWR = Total Maximum Thrust (g) / All-Up Weight (g)</div>
   <p>Where All-Up Weight (AUW) includes the frame, four motors, ESC, FC, VTX, antennas, FPV camera, battery, and optional HD recording camera (GoPro):</p>
   <ul>
@@ -1792,6 +1779,26 @@ function getCh4Content() {
   return `
 <div class="ch-section">
   <h2>The Component Harmony Principle</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/SC556vEMoYs" 
+              title="How to Choose Parts for a 5-Inch FPV Drone Kit" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Choose Parts for a 5-Inch FPV Drone Kit</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=SC556vEMoYs" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The single greatest mistake made by first-time drone builders is purchasing parts in isolation based on random sales or YouTube clips. An FPV quadcopter is an interconnected electromechanical system:</p>
   <div class="spec-box">
     <div class="box-label" style="color:var(--accent-indigo)">Master Engineering Sequence</div>
@@ -1808,6 +1815,26 @@ function getCh4Content() {
 
 <div class="ch-section">
   <h2>Why Each Specification is Chosen</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/n8epgP7jlrk" 
+              title="4S vs 6S LiPo Batteries - Which Do I Buy as a New Pilot?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">4S vs 6S LiPo Batteries - Which Do I Buy as a New Pilot?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=n8epgP7jlrk" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <table class="data-table">
     <thead>
       <tr><th>Component</th><th>Recommended 5" 6S Spec</th><th>Why This Exact Spec is Chosen</th></tr>
@@ -1978,6 +2005,26 @@ function getCh5Content() {
 
 <div class="ch-section">
   <h2>Stator Size Geometry (XXYY Naming)</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/Wxpa-1FrbYM" 
+              title="2306 vs 2207 Motor Size Comparison for FPV Mini Quad" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">2306 vs 2207 Motor Size Comparison for FPV Mini Quad</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=Wxpa-1FrbYM" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Motor sizing is expressed as a 4-digit number: <strong>2207</strong> = 22mm Stator Diameter × 7mm Stator Height:</p>
   <div class="formula-card">Stator Volume = π × (Diameter / 2)² × Height</div>
   <table class="data-table">
@@ -2012,6 +2059,26 @@ function getCh5Content() {
 
 <div class="ch-section">
   <h2>Motor KV & Stator Explorer</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/E6nsJpuaTQc" 
+              title="How Do You Choose Motor KV for a Build?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Do You Choose Motor KV for a Build?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=E6nsJpuaTQc" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <div class="widget-card">
     <div class="widget-header">
       <span class="widget-title">⚡ Interactive Motor KV & RPM Solver</span>
@@ -2082,6 +2149,26 @@ function getCh6Content() {
 
 <div class="ch-section">
   <h2>Decoding Propeller Naming Formats</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/p09s3f9K6s0" 
+              title="How to Choose FPV Drone Propellers: Pitch and Diameter" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Choose FPV Drone Propellers: Pitch and Diameter</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=p09s3f9K6s0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Modern props use a 5-digit shorthand code, such as <strong>51466</strong>:</p>
   <ul>
     <li><strong>First Two Digits (51):</strong> Propeller diameter in inches (5.1 inches). Larger diameter sweeps a wider disk area, generating more thrust at lower RPM.</li>
@@ -2130,6 +2217,26 @@ function getCh6Content() {
 
 <div class="ch-section">
   <h2>"Props In" vs "Props Out" (Reversed Rotation)</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/bZL-BBl9JnE" 
+              title="Props-In (Standard) vs. Props-Out (Reversed) - Which Is Better?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Props-In (Standard) vs. Props-Out (Reversed) - Which Is Better?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=bZL-BBl9JnE" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Traditionally, quadcopters were configured with propellers rotating inwards toward the front camera ("Props In"). Modern FPV setups universally run <strong>"Props Out" (Reversed Rotation)</strong>:</p>
   <ul>
     <li><strong>Camera Lens Protection:</strong> In "Props Out", the front propellers spin outward away from the center cage, throwing dirt, moisture, and shredded grass away from your FPV camera lens.</li>
@@ -2146,6 +2253,26 @@ function getCh7Content() {
   return `
 <div class="ch-section">
   <h2>Electronic Speed Controller (ESC) Architecture</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/NoiqODFwU68" 
+              title="How Do I Pick An ESC For My Flight Controller?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Do I Pick An ESC For My Flight Controller?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=NoiqODFwU68" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The 4-in-1 Electronic Speed Controller is the heavy-power bridge between your DC battery pack and the three-phase AC motors. For each of the 4 motor channels, the ESC uses 6 high-power N-channel MOSFET transistors arranged into 3 half-bridges:</p>
   <div class="formula-card">Joule Conduction Losses = I² × R_DS(on)</div>
   <p>Premium ESCs utilize MOSFETs with ultra-low drain-to-source on-resistance ($R_{DS(on)} \le 0.8\text{ m}\Omega$). Lower internal resistance means cooler temperatures and reduced risk of thermal runaway.</p>
@@ -2153,6 +2280,26 @@ function getCh7Content() {
 
 <div class="ch-section">
   <h2>ESC Firmware: AM32 & Bidirectional DShot</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/2tvWimtmgd4" 
+              title="How Does Betaflight RPM Filtering Work?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How Does Betaflight RPM Filtering Work?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=2tvWimtmgd4" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <table class="data-table">
     <thead>
       <tr><th>Firmware</th><th>Architecture</th><th>Capabilities</th></tr>
@@ -2177,6 +2324,26 @@ function getCh7Content() {
 
 <div class="ch-section">
   <h2>The Mandatory Low-ESR Capacitor</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/kdPfiZ37nKs" 
+              title="Best Way to Mount Your Capacitor on ESC or XT60" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Best Way to Mount Your Capacitor on ESC or XT60</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=kdPfiZ37nKs" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <div class="danger-box">
     <div class="box-label" style="color:var(--accent-rose)">⚡ Inductive Voltage Spikes Destroy Electronics</div>
     <p style="margin:0;font-size:14px;color:var(--text-secondary)">
@@ -2237,6 +2404,26 @@ function getCh8Content() {
   return `
 <div class="ch-section">
   <h2>Compute Architecture: MCUs & Gyros</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/gryW-L_U9S8" 
+              title="What Are The Benefits Of An F7 Flight Controller Over An F4?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">What Are The Benefits Of An F7 Flight Controller Over An F4?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=gryW-L_U9S8" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The Flight Controller (FC) samples its onboard 6-axis Inertial Measurement Unit (IMU) at 3.2kHz to 8kHz, calculates error terms from pilot radio setpoints, runs the PID loop, and outputs motor commands via DShot600:</p>
 
   <table class="data-table">
@@ -2271,6 +2458,26 @@ function getCh8Content() {
 
 <div class="ch-section">
   <h2>Gyroscopes & Soft-Mounting Physics</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/QhW-0ddGJ7A" 
+              title="How to Wire a Flight Controller and Soft Mount" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Wire a Flight Controller and Soft Mount</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=QhW-0ddGJ7A" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>The onboard gyroscope measures angular rates of change on roll, pitch, and yaw:</p>
   <ul>
     <li><strong>ICM-42688-P:</strong> The current benchmark sensor. 32kHz native internal sampling rate with an ultra-low noise floor, but sensitive to mechanical frame vibrations.</li>
@@ -2335,6 +2542,26 @@ function getCh9Content() {
   return `
 <div class="ch-section">
   <h2>LiPo Electrochemistry & Voltage Thresholds</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/lZKoW_ekAu0" 
+              title="How to Charge and Handle LiPo Batteries Safely" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">How to Charge and Handle LiPo Batteries Safely</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=lZKoW_ekAu0" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Lithium Polymer (LiPo) batteries use lithium cobalt oxide cathodes and graphite anodes. Each cell has strict physical voltage boundaries:</p>
 
   <table class="data-table">
@@ -2372,6 +2599,26 @@ function getCh9Content() {
 
 <div class="ch-section">
   <h2>The C-Rating Reality vs Marketing Claims</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/uBPuwOyh3do" 
+              title="LiPo Internal Resistance & C-Rating Truth" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">LiPo Internal Resistance & C-Rating Truth</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=uBPuwOyh3do" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Manufacturers advertise exaggerated discharge ratings like "150C" ($\text{Max Current} = \text{Capacity (Ah)} \times C$). A 1300mAh pack with a real 150C rating would deliver 195 Amps continuously—melting its own silicone leads within seconds!</p>
   <p><strong>The True Metric of LiPo Health is Internal Resistance (IR):</strong></p>
   <ul>
@@ -2428,6 +2675,26 @@ function getCh10Content() {
   return `
 <div class="ch-section">
   <h2>The FPV Video Ecosystems Compared</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/TMOeIQ4VRX4" 
+              title="Best FPV Goggles Buyer Guide: DJI vs HDZero vs Walksnail vs Analog" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Best FPV Goggles Buyer Guide: DJI vs HDZero vs Walksnail vs Analog</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=TMOeIQ4VRX4" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>Your video link is your eyes in the sky. Four competing transmission systems dominate the FPV landscape:</p>
 
   <table class="data-table">
@@ -2469,6 +2736,26 @@ function getCh10Content() {
 
 <div class="ch-section">
   <h2>Antenna Circular Polarization Physics</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/mbHl3DgnN4k" 
+              title="Left vs Right Circular Polarization (LHCP vs RHCP)" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Left vs Right Circular Polarization (LHCP vs RHCP)</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=mbHl3DgnN4k" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>FPV radio frequencies utilize <strong>Circular Polarization (CP)</strong>—the electromagnetic wave radiates in a corkscrew pattern:</p>
   <ul>
     <li><strong>Multipath Reflection Rejection:</strong> When a circularly polarized wave bounces off concrete, metal, or wet trees, its rotational direction reverses (RHCP becomes LHCP). The receiving antenna rejects the reversed signal, eliminating ghosting interference!</li>
@@ -2478,6 +2765,26 @@ function getCh10Content() {
 
 <div class="ch-section">
   <h2>ExpressLRS: The Open-Source RC King</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/oHA2qhABamc" 
+              title="Why I Always Bind ELRS - ExpressLRS Setup Guide" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Why I Always Bind ELRS - ExpressLRS Setup Guide</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=oHA2qhABamc" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p><strong>ExpressLRS (ELRS)</strong> has rendered legacy proprietary protocols obsolete by combining Semtech LoRa spread-spectrum hardware with open-source firmware:</p>
   <ul>
     <li><strong>Packet Rates up to 1000Hz:</strong> Transmits stick updates every single millisecond.</li>
@@ -2496,6 +2803,26 @@ function getCh11Content() {
   return `
 <div class="ch-section">
   <h2>The Step-by-Step Bench Assembly Sequence</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/kfhHecJsS3Y" 
+              title="Build an FPV Drone Step by Step - Soldering & Assembly" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Build an FPV Drone Step by Step - Soldering & Assembly</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=kfhHecJsS3Y" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <ol>
     <li><strong>Frame Preparation & Dry-Fit:</strong> Sand carbon arm edges lightly, test standoffs, and apply blue threadlocker (Loctite 242) to steel bolts.</li>
     <li><strong>Motor Installation:</strong> Bolt motors to arms. <strong style="color:var(--accent-rose)">VERIFY SCREW DEPTH!</strong> Screws must not penetrate stator windings.</li>
@@ -2511,6 +2838,26 @@ function getCh11Content() {
 
 <div class="ch-section">
   <h2>The PID Control Loop Explained</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/M-6pq1rFtBI" 
+              title="Should I Learn to PID Tune or Use Betaflight Presets?" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Should I Learn to PID Tune or Use Betaflight Presets?</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=M-6pq1rFtBI" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:0.75rem;margin:1.25rem 0">
     <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:1rem">
       <span style="color:var(--accent-blue);font-weight:700">P (Proportional)</span>
@@ -2567,6 +2914,26 @@ function getCh12Content() {
   return `
 <div class="ch-section">
   <h2>Race Event Frequency Management & Pit Etiquette</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/DwcE68FmFrE" 
+              title="What Are The Best Frequencies to Use For FPV? RaceBand & Pit Mode" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">What Are The Best Frequencies to Use For FPV? RaceBand & Pit Mode</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=DwcE68FmFrE" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <p>At FPV racing events, up to 8 pilots fly simultaneously on 5.8GHz. Proper frequency management is critical:</p>
 
   <div class="danger-box">
@@ -2595,6 +2962,26 @@ function getCh12Content() {
 
 <div class="ch-section">
   <h2>Interactive Master Pre-Flight Checklist</h2>
+
+  <div style="background:#0B101D;border:1px solid rgba(99,102,241,0.25);border-radius:16px;overflow:hidden;margin:1.5rem 0;box-shadow:0 8px 25px rgba(0,0,0,0.35)">
+    <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden">
+      <iframe src="https://www.youtube-nocookie.com/embed/O5ngG--_pKo" 
+              title="Failsafe Setup and Test in Betaflight to Prevent Flyaways" 
+              style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen></iframe>
+    </div>
+    <div style="padding:0.85rem 1.15rem;display:flex;align-items:center;justify-content:space-between;gap:0.75rem;flex-wrap:wrap">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--accent-indigo);text-transform:uppercase;letter-spacing:0.04em">📺 TUTORIAL SPOTLIGHT • Joshua Bardwell</div>
+        <div style="font-size:13px;font-weight:700;color:#F8FAFC;margin-top:0.15rem">Failsafe Setup and Test in Betaflight to Prevent Flyaways</div>
+      </div>
+      <a href="https://www.youtube.com/watch?v=O5ngG--_pKo" target="_blank" rel="noopener" class="btn-secondary" style="font-size:12px;padding:0.35rem 0.75rem">
+        Watch on YouTube ↗
+      </a>
+    </div>
+  </div>
+
   <div class="widget-card">
     <div class="widget-header">
       <span class="widget-title">✅ Master Flight & Safety Inspection Checklist</span>
@@ -2671,7 +3058,7 @@ function getChapterContentById(id) {
     case 'ch12': raw = getCh12Content(); break;
     default: return '<p>Chapter content not found.</p>';
   }
-  return getVideoSectionHtml(id) + raw + getQnaSectionHtml(id);
+  return raw + getQnaSectionHtml(id);
 }
 
 function navigate(target) {

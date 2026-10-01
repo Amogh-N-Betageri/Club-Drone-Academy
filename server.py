@@ -263,9 +263,12 @@ class DroneAcademyHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
 
+class ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
 def run_server():
     init_db()
-    with socketserver.TCPServer(("", PORT), DroneAcademyHandler) as httpd:
+    with ReusableTCPServer(("", PORT), DroneAcademyHandler) as httpd:
         print(f"[🚀] Club Drone Academy server running at: http://localhost:{PORT}")
         print(f"[📖] Student App: http://localhost:{PORT}/index.html")
         print(f"[📊] Admin Dashboard: http://localhost:{PORT}/admin.html")
