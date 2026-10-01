@@ -589,8 +589,7 @@ def get_full_html():
     <button class="btn-primary" style="width:100%;justify-content:center" onclick="submitLogin()">
       Start Flight Training →
     </button>
-    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px">
-      <a href="admin.html" style="color:var(--accent-blue);text-decoration:none">Instructor Command Center ↗</a>
+    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);text-align:center;font-size:12px">
       <button onclick="guestContinue()" style="background:none;border:none;color:var(--text-muted);cursor:pointer">Continue as Guest</button>
     </div>
   </div>

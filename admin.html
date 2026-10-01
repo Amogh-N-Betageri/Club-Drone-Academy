@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Instructor Command Center | Club Drone Academy</title>
+<title>Admin & Instructor Portal | Club Drone Academy</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -34,11 +34,29 @@
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
-    padding: 1.5rem 1rem 3rem;
   }
   
-  .max-container { max-width: 1100px; margin: 0 auto; }
+  .max-container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
   .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* Auth Screen */
+  #authScreen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1rem;
+  }
+  .auth-card {
+    background: #0E1626;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 420px;
+    padding: 2.25rem 2rem;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  }
 
   /* Metric Cards */
   .stat-card {
@@ -145,8 +163,8 @@
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
   }
 
-  /* Search Input */
-  .search-input {
+  /* Input fields */
+  .admin-input {
     background: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border);
@@ -155,110 +173,138 @@
     font-size: 14px;
     outline: none;
     width: 100%;
-    max-width: 320px;
   }
-  .search-input:focus { border-color: var(--accent-blue); }
+  .admin-input:focus { border-color: var(--accent-blue); }
 </style>
 </head>
 <body>
 
-<div class="max-container">
-  <!-- Top Navigation Header -->
-  <header style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap">
-    <div>
-      <div style="display:inline-flex;align-items:center;gap:0.4rem;font-size:12px;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.25rem">
-        <span>🛡️</span> Instructor Portal
-      </div>
-      <h1 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#F8FAFC">
-        Club Drone Academy Dashboard
-      </h1>
-      <p style="font-size:14px;color:var(--text-secondary);margin:0">
-        Live database monitor for student logins, course completion, and lesson Q&A exam scores.
-      </p>
-    </div>
-    <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
-      <a href="index.html" class="btn btn-secondary" title="Open the Student Learning App">
-        <span>📖</span> Open Student App
-      </a>
-      <button class="btn btn-primary" onclick="exportCSV()" title="Export all student records to CSV spreadsheet">
-        <span>📥</span> Export CSV Report
-      </button>
-      <button class="btn btn-secondary" onclick="fetchStudents(true)" title="Force Refresh Database">
-        <span>🔄</span> Refresh
-      </button>
-    </div>
-  </header>
+<!-- ===== ADMIN AUTHENTICATION GATE SCREEN ===== -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div style="font-size:42px;margin-bottom:0.75rem">🛡️</div>
+    <h2 style="font-size:22px;font-weight:800;color:#F8FAFC;margin-bottom:0.25rem">Admin Verification</h2>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem">
+      Restricted instructor portal. Enter your administrator passcode to access student records and course database.
+    </p>
 
-  <!-- Metric Statistics Cards -->
-  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:var(--accent-blue)">👥</div>
-      <div>
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ENROLLED STUDENTS</span>
-        <div style="font-size:28px;font-weight:800;color:#F8FAFC" id="metricTotalStudents">0</div>
+    <div style="text-align:left;margin-bottom:1.25rem">
+      <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.35rem;text-transform:uppercase">ADMIN PASSCODE</label>
+      <input type="password" id="adminPassInput" class="admin-input" placeholder="Enter admin password..." onkeydown="if(event.key==='Enter') verifyAdminPass()">
+      <div id="authErrorMsg" style="font-size:12px;color:var(--accent-rose);margin-top:0.4rem;display:none">
+        ⚠ Invalid passcode. Please check your credentials.
       </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:var(--accent-emerald)">📊</div>
-      <div>
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">AVG COMPLETION RATE</span>
-        <div style="font-size:28px;font-weight:800;color:var(--accent-emerald)" id="metricAvgCompletion">0%</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent-violet)">🎓</div>
-      <div>
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">LESSONS COMPLETED</span>
-        <div style="font-size:28px;font-weight:800;color:var(--accent-violet)" id="metricTotalLessons">0</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--accent-amber)">📝</div>
-      <div>
-        <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ACTIVE DATABASE</span>
-        <div style="font-size:15px;font-weight:700;color:#F8FAFC" id="metricDbSource">SQLite DB & Local</div>
-      </div>
-    </div>
+
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:0.75rem" onclick="verifyAdminPass()">
+      Unlock Instructor Dashboard →
+    </button>
   </div>
+</div>
 
-  <!-- Search & Filter Controls -->
-  <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap">
-    <div style="display:flex;gap:0.5rem;align-items:center;flex:1;min-width:260px">
-      <input type="text" class="search-input" id="searchFilter" placeholder="🔍 Search student name or email..." oninput="filterStudents()">
-      <select class="search-input" style="max-width:180px" id="statusFilter" onchange="filterStudents()">
-        <option value="all">All Progress</option>
-        <option value="completed">Completed (100%)</option>
-        <option value="inprogress">In Progress</option>
-        <option value="notstarted">Not Started (0%)</option>
-      </select>
-    </div>
-    <div style="font-size:13px;color:var(--text-muted)" id="studentCountBadge">
-      Showing 0 students
-    </div>
-  </div>
+<!-- ===== MAIN PROTECTED DASHBOARD VIEW ===== -->
+<div id="dashboardView" style="display:none">
+  <div class="max-container">
+    <!-- Top Navigation Header -->
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:2rem;flex-wrap:wrap">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:0.4rem;font-size:12px;font-weight:700;color:#818CF8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.25rem">
+          <span>🛡️</span> Admin Restricted Portal
+        </div>
+        <h1 style="font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#F8FAFC">
+          Club Drone Academy Dashboard
+        </h1>
+        <p style="font-size:14px;color:var(--text-secondary);margin:0">
+          Live database monitor for student logins, course completion, and lesson Q&A exam scores.
+        </p>
+      </div>
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="exportCSV()" title="Export all student records to CSV spreadsheet">
+          <span>📥</span> Export CSV
+        </button>
+        <button class="btn btn-secondary" onclick="openImportModal()" title="Import student records from JSON or backup">
+          <span>📤</span> Import
+        </button>
+        <button class="btn btn-secondary" onclick="fetchStudents(true)" title="Force Refresh Database">
+          <span>🔄</span> Refresh
+        </button>
+        <button class="btn btn-danger" onclick="adminSignOut()" title="Lock dashboard and sign out">
+          <span>🔒</span> Lock & Sign Out
+        </button>
+      </div>
+    </header>
 
-  <!-- Student Table Container -->
-  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)">
-    <div style="overflow-x:auto">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>Student Name & ID</th>
-            <th>Progress Bar</th>
-            <th>Chapters Finished</th>
-            <th>Q&A Score</th>
-            <th>Last Active</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="studentTableBody">
-          <tr>
-            <td colspan="6" style="text-align:center;padding:3rem 1rem;color:var(--text-muted)">
-              Loading student records from database...
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Metric Statistics Cards -->
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:var(--accent-blue)">👥</div>
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ENROLLED STUDENTS</span>
+          <div style="font-size:28px;font-weight:800;color:#F8FAFC" id="metricTotalStudents">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.12);color:var(--accent-emerald)">📊</div>
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">AVG COMPLETION RATE</span>
+          <div style="font-size:28px;font-weight:800;color:var(--accent-emerald)" id="metricAvgCompletion">0%</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(139,92,246,0.12);color:var(--accent-violet)">🎓</div>
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">LESSONS COMPLETED</span>
+          <div style="font-size:28px;font-weight:800;color:var(--accent-violet)" id="metricTotalLessons">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--accent-amber)">📝</div>
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ACTIVE DATABASE</span>
+          <div style="font-size:15px;font-weight:700;color:#F8FAFC" id="metricDbSource">SQLite DB & Local</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.25rem;flex-wrap:wrap">
+      <div style="display:flex;gap:0.5rem;align-items:center;flex:1;min-width:260px">
+        <input type="text" class="admin-input" style="max-width:320px" id="searchFilter" placeholder="🔍 Search student name or email..." oninput="filterStudents()">
+        <select class="admin-input" style="max-width:180px" id="statusFilter" onchange="filterStudents()">
+          <option value="all">All Progress</option>
+          <option value="completed">Completed (100%)</option>
+          <option value="inprogress">In Progress</option>
+          <option value="notstarted">Not Started (0%)</option>
+        </select>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted)" id="studentCountBadge">
+        Showing 0 students
+      </div>
+    </div>
+
+    <!-- Student Table Container -->
+    <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.3)">
+      <div style="overflow-x:auto">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Student Name & ID</th>
+              <th>Progress Bar</th>
+              <th>Chapters Finished</th>
+              <th>Q&A Score</th>
+              <th>Last Active</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:3rem 1rem;color:var(--text-muted)">
+                Loading student records from database...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -302,7 +348,65 @@
   </div>
 </div>
 
+<!-- Import Modal -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal-box" style="max-width:500px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <h2 style="font-size:18px;font-weight:800;color:#F8FAFC">Import Student Records</h2>
+      <button onclick="closeImportModal()" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer">&times;</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem">
+      Paste exported student JSON data to import records into the local database:
+    </p>
+    <textarea id="importJsonInput" rows="6" class="admin-input" style="font-family:monospace;font-size:12px;resize:vertical" placeholder='[{"name":"Alex","email":"alex@example.com",...}]'></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1.25rem">
+      <button class="btn btn-secondary" onclick="closeImportModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitImport()">Import Records</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// DEFAULT ADMIN PASSCODE (Can be changed in localStorage)
+const DEFAULT_PASS = "admin123";
+
+function checkAdminAuth() {
+  const isAuth = sessionStorage.getItem('droneAcademy_adminAuth') === 'true';
+  if (isAuth) {
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    checkServerAndFetch();
+  } else {
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('dashboardView').style.display = 'none';
+  }
+}
+
+function verifyAdminPass() {
+  const input = document.getElementById('adminPassInput').value;
+  const currentPass = localStorage.getItem('droneAcademy_adminPass') || DEFAULT_PASS;
+  const errorMsg = document.getElementById('authErrorMsg');
+
+  if (input === currentPass) {
+    sessionStorage.setItem('droneAcademy_adminAuth', 'true');
+    errorMsg.style.display = 'none';
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('dashboardView').style.display = 'block';
+    checkServerAndFetch();
+  } else {
+    errorMsg.style.display = 'block';
+    document.getElementById('adminPassInput').value = '';
+    document.getElementById('adminPassInput').focus();
+  }
+}
+
+function adminSignOut() {
+  sessionStorage.removeItem('droneAcademy_adminAuth');
+  document.getElementById('adminPassInput').value = '';
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('dashboardView').style.display = 'none';
+}
+
 const CHAPTER_TITLES = [
   "1. FPV Piloting & Flight Dynamics",
   "2. Types of Drones & Airframe Geometry",
@@ -538,6 +642,41 @@ function closeModal() {
   document.getElementById('detailModal').classList.remove('open');
 }
 
+function openImportModal() {
+  document.getElementById('importModal').classList.add('open');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('open');
+}
+
+function submitImport() {
+  const jsonStr = document.getElementById('importJsonInput').value.trim();
+  if (!jsonStr) {
+    alert('Please paste valid JSON student records.');
+    return;
+  }
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (!Array.isArray(parsed)) throw new Error('Input must be a JSON array of students');
+    
+    // Merge into local storage
+    const localDb = JSON.parse(localStorage.getItem('droneAcademy_allStudents') || '[]');
+    parsed.forEach(incoming => {
+      const idx = localDb.findIndex(s => s.email && incoming.email && s.email.toLowerCase() === incoming.email.toLowerCase());
+      if (idx >= 0) localDb[idx] = Object.assign(localDb[idx], incoming);
+      else localDb.push(incoming);
+    });
+    localStorage.setItem('droneAcademy_allStudents', JSON.stringify(localDb));
+    allStudents = localDb;
+    updateStatsAndTable();
+    closeImportModal();
+    alert(`Successfully imported ${parsed.length} student records!`);
+  } catch (err) {
+    alert('Failed to parse JSON: ' + err.message);
+  }
+}
+
 async function resetStudent(email) {
   if (!confirm(`Are you sure you want to reset all course progress and scores for ${email}?`)) return;
 
@@ -599,13 +738,15 @@ function exportCSV() {
   document.body.removeChild(a);
 }
 
-// Auto-refresh every 6 seconds
+// Auto-refresh every 6 seconds when authenticated
 setInterval(() => {
-  checkServerAndFetch();
+  if (sessionStorage.getItem('droneAcademy_adminAuth') === 'true') {
+    checkServerAndFetch();
+  }
 }, 6000);
 
-// Init
-checkServerAndFetch();
+// Init check
+checkAdminAuth();
 </script>
 </body>
 </html>
