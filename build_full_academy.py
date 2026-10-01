@@ -1101,6 +1101,109 @@ const CHAPTER_QNA = {
 let currentUser = JSON.parse(localStorage.getItem('droneAcademy_activeUser') || 'null');
 let userQnaScores = JSON.parse(localStorage.getItem('clubDroneAcademy_qna') || '{}');
 
+
+function getQnaSectionHtml(id) {
+  const questions = CHAPTER_QNA[id];
+  if (!questions || questions.length === 0) return '';
+
+  const saved = userQnaScores[id] || { answers: {} };
+
+  return `
+    <div class="ch-section">
+      <h2>📝 Lesson Knowledge Check & Q&A</h2>
+      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:1rem">
+        Answer the following technical questions to verify your comprehension. Your answers are automatically saved to your profile:
+      </p>
+
+      <div class="widget-card" style="margin-top:0.5rem">
+        <div class="widget-header">
+          <span class="widget-title">🧠 Examination & Mastery Check</span>
+          <span style="font-size:12px;color:var(--text-muted)" id="qnaScoreBadge_${id}">
+            ${saved.score !== undefined ? `Score: ${saved.score} / ${questions.length}` : `2 Questions`}
+          </span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:1.5rem">
+          ${questions.map((q, qIdx) => {
+            const selectedOpt = saved.answers ? saved.answers[qIdx] : undefined;
+            return `
+              <div>
+                <div style="font-size:14px;font-weight:700;color:#F8FAFC;margin-bottom:0.75rem">
+                  ${qIdx + 1}. ${q.q}
+                </div>
+                <div id="qnaOptions_${id}_${qIdx}">
+                  ${q.options.map((opt, optIdx) => {
+                    let optClass = 'qna-opt';
+                    if (selectedOpt !== undefined) {
+                      if (optIdx === q.answer) optClass += ' correct';
+                      else if (selectedOpt === optIdx) optClass += ' wrong';
+                    }
+                    return `
+                      <div class="${optClass}" onclick="selectQnaOption('${id}', ${qIdx}, ${optIdx})">
+                        <span style="font-weight:600;margin-right:0.4rem">${String.fromCharCode(65 + optIdx)}.</span> ${opt}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+                <div id="qnaFeedback_${id}_${qIdx}" style="font-size:12px;margin-top:0.4rem;${selectedOpt !== undefined ? 'display:block' : 'display:none'}">
+                  <div style="padding:0.6rem 0.85rem;border-radius:8px;background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);color:var(--text-secondary)">
+                    <strong>💡 Explanation:</strong> ${q.explanation}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectQnaOption(chId, qIdx, optIdx) {
+  const questions = CHAPTER_QNA[chId];
+  if (!questions) return;
+  const q = questions[qIdx];
+
+  if (!userQnaScores[chId]) {
+    userQnaScores[chId] = { answers: {}, score: 0, total: questions.length };
+  }
+
+  userQnaScores[chId].answers[qIdx] = optIdx;
+
+  // Recalculate chapter score
+  let correctCount = 0;
+  questions.forEach((question, idx) => {
+    if (userQnaScores[chId].answers[idx] === question.answer) {
+      correctCount++;
+    }
+  });
+  userQnaScores[chId].score = correctCount;
+  userQnaScores[chId].total = questions.length;
+
+  localStorage.setItem('clubDroneAcademy_qna', JSON.stringify(userQnaScores));
+
+  // Update UI options
+  const optContainer = document.getElementById(`qnaOptions_${chId}_${qIdx}`);
+  if (optContainer) {
+    const options = optContainer.querySelectorAll('.qna-opt');
+    options.forEach((el, i) => {
+      el.classList.remove('correct', 'wrong');
+      if (i === q.answer) el.classList.add('correct');
+      else if (i === optIdx) el.classList.add('wrong');
+    });
+  }
+
+  // Show feedback
+  const feedbackEl = document.getElementById(`qnaFeedback_${chId}_${qIdx}`);
+  if (feedbackEl) feedbackEl.style.display = 'block';
+
+  // Update score badge
+  const badge = document.getElementById(`qnaScoreBadge_${chId}`);
+  if (badge) badge.textContent = `Score: ${correctCount} / ${questions.length}`;
+
+  syncWithDatabase();
+}
+
 function checkLogin() {
   if (!currentUser) {
     document.getElementById('loginModal').classList.add('open');
@@ -3081,7 +3184,13 @@ function navigate(target) {
     document.getElementById('chapterPosition').textContent = 'Lesson ' + (idx + 1) + ' of ' + CHAPTERS.length;
     document.getElementById('chapterTitle').textContent = ch.title;
     document.getElementById('chapterSubtitle').textContent = ch.subtitle;
-    document.getElementById('chapterContent').innerHTML = getChapterContentById(target);
+    try {
+      const content = getChapterContentById(target);
+      document.getElementById('chapterContent').innerHTML = content;
+    } catch (e) {
+      console.error('Render error:', e);
+      document.getElementById('chapterContent').innerHTML = '<div style="padding:2rem;color:#FDA4AF">Failed to render chapter content. Error: ' + e.message + '</div>';
+    }
 
     // Prev / Next Buttons
     const prevBtn = document.getElementById('prevChapterBtn');
@@ -3231,26 +3340,30 @@ function closeDrawer() {
 // INTERACTIVE WIDGET INITIALIZATION & LOGIC
 // ==========================================
 function initChapterWidgets(id) {
-  if (id === 'ch1') {
-    resetSticks();
-  } else if (id === 'ch2') {
-    setGeoTab('truex', document.querySelector('.seg-tab'));
-  } else if (id === 'ch3') {
-    updatePhysicsCalc();
-  } else if (id === 'ch4') {
-    updateSpecBuilder();
-  } else if (id === 'ch5') {
-    updateMotorExplorer();
-  } else if (id === 'ch6') {
-    updatePropSpeedCalc();
-  } else if (id === 'ch7') {
-    updateEscSafetyCalc();
-  } else if (id === 'ch8') {
-    // UART Planner
-  } else if (id === 'ch9') {
-    updateBattSim();
-  } else if (id === 'ch11') {
-    setTimeout(drawPidCanvas, 50);
+  try {
+    if (id === 'ch1') {
+      resetSticks();
+    } else if (id === 'ch2') {
+      setGeoTab('truex', document.querySelector('#geoDisplay') ? document.querySelector('.seg-tab') : null);
+    } else if (id === 'ch3') {
+      updatePhysicsCalc();
+    } else if (id === 'ch4') {
+      updateSpecBuilder();
+    } else if (id === 'ch5') {
+      updateMotorExplorer();
+    } else if (id === 'ch6') {
+      updatePropSpeedCalc();
+    } else if (id === 'ch7') {
+      updateEscSafetyCalc();
+    } else if (id === 'ch8') {
+      // UART Planner
+    } else if (id === 'ch9') {
+      updateBattSim();
+    } else if (id === 'ch11') {
+      setTimeout(drawPidCanvas, 50);
+    }
+  } catch (err) {
+    console.warn("Widget init error:", err);
   }
 }
 
@@ -3330,7 +3443,10 @@ function updateStickReactionText(thr, yaw, pitch, roll) {
 }
 
 function setCompTab(type, btn) {
-  btn.parentElement.querySelectorAll('.seg-tab').forEach(t => t.classList.remove('active'));
+  if (btn && btn.parentElement) {
+    btn.parentElement.querySelectorAll('.seg-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
   btn.classList.add('active');
   const display = document.getElementById('compDisplay');
   if (type === 'fpv') {
@@ -3366,7 +3482,7 @@ function setCompTab(type, btn) {
 
 // CH2: Airframe Geometry SVG
 function setGeoTab(type, btn) {
-  if (btn) {
+  if (btn && btn.parentElement) {
     btn.parentElement.querySelectorAll('.seg-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
   }
