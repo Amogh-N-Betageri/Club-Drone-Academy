@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <title>Admin & Instructor Portal | ARC Drone</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
@@ -175,6 +175,45 @@
     width: 100%;
   }
   .admin-input:focus { border-color: var(--accent-blue); }
+
+  /* Admin Responsive Breakpoints */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+  }
+  .table-container .admin-table {
+    min-width: 650px;
+  }
+
+  @media (max-width: 768px) {
+    .max-container {
+      padding: 1rem 0.85rem 2.5rem !important;
+    }
+    .stat-card {
+      min-width: 100% !important;
+      padding: 1rem 1.15rem !important;
+    }
+    .admin-header-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 1rem !important;
+    }
+    .admin-actions-wrap {
+      width: 100% !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 0.5rem !important;
+    }
+    .admin-actions-wrap .btn {
+      flex: 1 1 auto !important;
+      justify-content: center !important;
+      padding: 0.65rem 1rem !important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -218,7 +257,7 @@
           Live database monitor for student logins, course completion, and lesson Q&A exam scores.
         </p>
       </div>
-      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+      <div class="admin-actions-wrap" style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="exportCSV()" title="Export all student records to CSV spreadsheet">
           <span>📥</span> Export CSV
         </button>

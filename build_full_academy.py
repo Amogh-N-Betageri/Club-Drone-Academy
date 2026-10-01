@@ -18,7 +18,7 @@ def get_full_html():
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -556,6 +556,279 @@ def get_full_html():
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 999px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+
+  /* ==========================================
+     RESPONSIVE ADAPTATIONS: PC, TABLET & PHONE
+     ========================================== */
+  
+  /* Tables wrapper for smooth touch scrolling */
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1.25rem 0;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .table-container .data-table {
+    margin: 0 !important;
+    border: none !important;
+    min-width: 480px;
+  }
+
+  /* Two-column responsive form grids */
+  .grid-2-col {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  /* Metric cards grid */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.85rem;
+    margin-top: 1.25rem;
+  }
+
+  /* Bottom Lesson Nav Bar */
+  .bottom-nav-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  /* DESKTOP / PC DEFAULT (> 1024px) */
+  @media (min-width: 1025px) {
+    .content-width {
+      max-width: 860px;
+      padding: 0 1.5rem;
+    }
+    #chapterList {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1.15rem !important;
+    }
+    .chapter-card {
+      height: 100%;
+    }
+  }
+
+  /* TABLET (641px - 1024px) */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .content-width {
+      max-width: 760px;
+      padding: 0 1.25rem;
+    }
+    #chapterList {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 1rem !important;
+    }
+    .chapter-card {
+      padding: 1.15rem 1.25rem;
+      height: 100%;
+    }
+    .app-header {
+      padding: 0.75rem 1.25rem;
+    }
+    .grid-2-col {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    .metric-grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+    }
+    .calc-metric-box {
+      padding: 0.85rem 0.5rem;
+      min-width: 0;
+    }
+    .calc-metric-val {
+      font-size: 22px;
+    }
+  }
+
+  /* PHONE / MOBILE (<= 640px) */
+  @media (max-width: 640px) {
+    body {
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .content-width {
+      padding: 0 0.85rem !important;
+    }
+
+    /* Header adaptations */
+    .app-header {
+      padding: 0.6rem 0.75rem !important;
+    }
+    .header-brand-badge {
+      display: none !important;
+    }
+    .header-progress-track {
+      display: none !important;
+    }
+    #headerProgressText {
+      font-size: 11px !important;
+    }
+    #userProfileBadge {
+      padding: 0.2rem 0.45rem !important;
+    }
+    #userNameLabel {
+      display: none !important;
+    }
+
+    /* Hero headline on Syllabus */
+    .hero-headline {
+      font-size: 26px !important;
+      line-height: 1.2 !important;
+      margin-bottom: 0.5rem !important;
+    }
+    .hero-subtitle {
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* Chapter cards on phone */
+    #chapterList {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.75rem !important;
+    }
+    .chapter-card {
+      padding: 1rem 0.85rem !important;
+      gap: 0.85rem !important;
+      border-radius: 14px !important;
+    }
+    .chapter-icon {
+      width: 42px !important;
+      height: 42px !important;
+      font-size: 20px !important;
+      border-radius: 10px !important;
+    }
+    .chapter-card h3 {
+      font-size: 15px !important;
+    }
+    .chapter-card p {
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Chapter lesson view titles */
+    .chapter-title-main {
+      font-size: 22px !important;
+      line-height: 1.25 !important;
+    }
+    .chapter-subtitle-main {
+      font-size: 14px !important;
+      margin-bottom: 1.25rem !important;
+    }
+    .ch-section {
+      margin-bottom: 2rem !important;
+    }
+    .ch-section h2 {
+      font-size: 18px !important;
+    }
+    .ch-section h3 {
+      font-size: 15px !important;
+    }
+
+    /* Interactive widgets on phone */
+    .widget-card {
+      padding: 1.15rem 0.85rem !important;
+      border-radius: 14px !important;
+      margin: 1.25rem 0 !important;
+    }
+    .widget-header {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.35rem !important;
+    }
+    .widget-title {
+      font-size: 15px !important;
+    }
+
+    /* Virtual Stick Gimbals on phone */
+    .stick-gimbal {
+      width: 110px !important;
+      height: 110px !important;
+    }
+    .stick-pointer {
+      width: 24px !important;
+      height: 24px !important;
+    }
+    .stick-container-wrap {
+      gap: 1rem !important;
+    }
+
+    /* Form & Calculator Grids */
+    .grid-2-col {
+      grid-template-columns: 1fr !important;
+      gap: 0.85rem !important;
+    }
+    .metric-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 0.5rem !important;
+    }
+    .calc-metric-box {
+      padding: 0.75rem 0.5rem !important;
+      min-width: 0 !important;
+    }
+    .calc-metric-val {
+      font-size: 20px !important;
+    }
+    .calc-metric-lbl {
+      font-size: 10px !important;
+    }
+
+    /* Bottom lesson navigation buttons on phone */
+    .bottom-nav-bar {
+      flex-direction: column-reverse !important;
+      gap: 0.75rem !important;
+      margin-top: 2rem !important;
+      padding-top: 1rem !important;
+    }
+    .bottom-nav-bar button,
+    .bottom-nav-bar div {
+      width: 100% !important;
+    }
+    .bottom-nav-bar .btn-primary,
+    .bottom-nav-bar .btn-secondary,
+    .bottom-nav-bar .btn-emerald {
+      width: 100% !important;
+      justify-content: center !important;
+      padding: 0.85rem 1rem !important;
+      font-size: 15px !important;
+    }
+    .bottom-nav-bar div {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+    }
+
+    /* Q&A module on phone */
+    .qna-opt {
+      padding: 0.85rem 0.85rem !important;
+      font-size: 13px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Modals */
+    .modal-box {
+      padding: 1.5rem 1.15rem !important;
+      border-radius: 16px !important;
+      max-width: 92vw !important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -612,7 +885,7 @@ def get_full_html():
       <span style="font-size:12px;font-weight:600;color:#F8FAFC;max-width:85px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="userNameLabel">Student</span>
     </div>
 
-      <div class="progress-track" style="flex:1;max-width:180px"><div class="progress-fill" id="headerProgress" style="width:0%"></div></div>
+      <div class="progress-track header-progress-track" style="flex:1;max-width:180px"><div class="progress-fill" id="headerProgress" style="width:0%"></div></div>
       <span style="font-size:12px;color:var(--text-secondary);font-weight:600;white-space:nowrap" id="headerProgressText">0/12</span>
     </div>
   </div>
@@ -625,10 +898,10 @@ def get_full_html():
       <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);border-radius:999px;padding:0.35rem 1rem;font-size:13px;font-weight:600;color:#A5B4FC;margin-bottom:1rem">
         <span>⚡</span> Interactive FPV Robotics & Flight Engineering
       </div>
-      <h1 style="font-size:36px;font-weight:800;margin-bottom:0.75rem;letter-spacing:-0.02em;background:linear-gradient(135deg,#60A5FA,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+      <h1 class="hero-headline" style="font-size:36px;font-weight:800;margin-bottom:0.75rem;letter-spacing:-0.02em;background:linear-gradient(135deg,#60A5FA,#818CF8,#C084FC);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
         ARC Drone
       </h1>
-      <p style="color:var(--text-secondary);font-size:17px;max-width:580px;margin:0 auto">
+      <p class="hero-subtitle" style="color:var(--text-secondary);font-size:17px;max-width:580px;margin:0 auto">
         Master every aspect of FPV quadcopters: aerodynamics, electronics selection, Newtonian physics, Betaflight logic, step-by-step soldering, and race strategy.
       </p>
     </div>
@@ -706,14 +979,14 @@ def get_full_html():
       </div>
 
       <!-- Chapter Title & Subtitle -->
-      <h1 style="font-size:30px;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.25rem;color:var(--text-primary)" id="chapterTitle"></h1>
-      <p style="font-size:16px;color:var(--text-secondary);margin-bottom:2rem" id="chapterSubtitle"></p>
+      <h1 class="chapter-title-main" style="font-size:30px;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.25rem;color:var(--text-primary)" id="chapterTitle"></h1>
+      <p class="chapter-subtitle-main" style="font-size:16px;color:var(--text-secondary);margin-bottom:2rem" id="chapterSubtitle"></p>
 
       <!-- Chapter Dynamic Body -->
       <div id="chapterContent"></div>
 
       <!-- Bottom Step-by-Step Navigation Bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:3.5rem;padding-top:1.5rem;border-top:1px solid var(--border);flex-wrap:wrap">
+      <div class="bottom-nav-bar">
         <button class="btn-secondary" id="prevChapterBtn" onclick="prevChapter()">← Previous Lesson</button>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
           <button class="btn-emerald" id="markCompleteBtn" onclick="toggleCompleteCurrent()">✓ Mark Complete</button>
@@ -1384,7 +1657,7 @@ function getCh1Content() {
       Drag inside either gimbal to simulate stick inputs and observe how the drone interprets your commands in real time:
     </p>
 
-    <div style="display:flex;gap:2rem;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem">
+    <div class="stick-container-wrap" style="display:flex;gap:2rem;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem">
       <!-- Left Stick -->
       <div style="text-align:center">
         <div style="font-size:13px;font-weight:700;color:var(--accent-blue);margin-bottom:0.5rem">LEFT GIMBAL (Throttle / Yaw)</div>
@@ -1437,7 +1710,8 @@ function getCh1Content() {
   </div>
 
   <p>Betaflight supports three fundamental flight stabilization algorithms:</p>
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr>
         <th>Mode</th>
@@ -1467,6 +1741,7 @@ function getCh1Content() {
       </tr>
     </tbody>
   </table>
+</div>
 
   <div class="tip-box">
     <div class="box-label" style="color:var(--accent-blue)">💡 The Golden Acro Rule</div>
@@ -1500,7 +1775,8 @@ function getCh1Content() {
       <button class="seg-tab" onclick="setCompTab('dji', this)">DJI Camera Drone (Mavic/Mini)</button>
     </div>
     <div id="compDisplay">
-      <table class="data-table" style="margin:0">
+      <div class="table-container">
+<table class="data-table" style="margin:0">
         <tbody>
           <tr><td><strong>Top Airspeed</strong></td><td style="color:var(--accent-emerald);font-weight:700">140 – 210 km/h (85 – 130 mph)</td></tr>
           <tr><td><strong>Thrust-to-Weight Ratio</strong></td><td style="color:var(--accent-emerald);font-weight:700">5:1 (Freestyle) to 12:1+ (Racing)</td></tr>
@@ -2422,6 +2698,7 @@ function getCh7Content() {
       </tr>
     </tbody>
   </table>
+</div>
 
   <h3>Why Bidirectional DShot is Essential</h3>
   <p>With Bidirectional DShot600, on every single control packet the ESC sends back a 16-bit telemetry packet containing the exact motor electrical period (eRPM). Betaflight calculates precise motor rotational frequencies in real time and positions narrow <strong>RPM dynamic notch filters</strong> right on top of motor harmonics, eliminating vibrations without adding filter phase delay!</p>
@@ -2531,7 +2808,8 @@ function getCh8Content() {
 
   <p>The Flight Controller (FC) samples its onboard 6-axis Inertial Measurement Unit (IMU) at 3.2kHz to 8kHz, calculates error terms from pilot radio setpoints, runs the PID loop, and outputs motor commands via DShot600:</p>
 
-  <table class="data-table">
+  <div class="table-container">
+<table class="data-table">
     <thead>
       <tr><th>Processor (MCU)</th><th>Clock Speed</th><th>Flash Memory</th><th>UART Serial Ports</th><th>Engineering Assessment</th></tr>
     </thead>
@@ -3483,10 +3761,12 @@ function setCompTab(type, btn) {
           <tr><td><strong>Flight Duration</strong></td><td>3.5 – 6.5 minutes per battery pack</td></tr>
         </tbody>
       </table>
+</div>
     `;
   } else {
     display.innerHTML = `
-      <table class="data-table" style="margin:0">
+      <div class="table-container">
+<table class="data-table" style="margin:0">
         <tbody>
           <tr><td><strong>Top Airspeed</strong></td><td>55 – 70 km/h (35 – 45 mph)</td></tr>
           <tr><td><strong>Thrust-to-Weight Ratio</strong></td><td>~2:1 (Gentle climb authority)</td></tr>
@@ -3497,6 +3777,7 @@ function setCompTab(type, btn) {
           <tr><td><strong>Flight Duration</strong></td><td style="color:var(--accent-emerald);font-weight:700">25 – 40 minutes (Li-Ion slow cruising)</td></tr>
         </tbody>
       </table>
+</div>
     `;
   }
 }
@@ -3940,8 +4221,11 @@ function handleHashRoute() {
 }
 
 function handleResize() {
-  const isMobile = window.innerWidth < 640;
-  document.getElementById('menuBtn').style.display = isMobile ? 'inline-block' : 'none';
+  const isMobileOrTablet = window.innerWidth <= 1024;
+  const menuBtn = document.getElementById('menuBtn');
+  if (menuBtn) {
+    menuBtn.style.display = isMobileOrTablet ? 'inline-block' : 'none';
+  }
 }
 
 window.addEventListener('hashchange', handleHashRoute);
