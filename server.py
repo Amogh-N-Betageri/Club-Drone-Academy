@@ -11,11 +11,23 @@ import json
 import sqlite3
 import os
 import urllib.parse
+import socket
 from datetime import datetime
 
 PORT = 5000
 DB_FILE = "/home/amogh/projects/Club/Drone/drone_academy.db"
 STATIC_DIR = "/home/amogh/projects/Club/Drone"
+
+def get_lan_ip():
+    """Detect local Wi-Fi / LAN IP address so other PCs on the network can connect."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "127.0.0.1"
 
 def init_db():
     conn = sqlite3.connect(DB_FILE)
@@ -56,6 +68,8 @@ class DroneAcademyHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_get_students()
         elif parsed.path == '/api/stats':
             self.handle_get_stats()
+        elif parsed.path == '/api/network-info':
+            self.handle_network_info()
         elif parsed.path == '/api/student':
             query = urllib.parse.parse_qs(parsed.query)
             email = query.get('email', [''])[0]
@@ -263,15 +277,42 @@ class DroneAcademyHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(json.dumps({'success': True}).encode('utf-8'))
 
+    def handle_network_info(self):
+        lan_ip = get_lan_ip()
+        info = {
+            'lan_ip': lan_ip,
+            'port': PORT,
+            'local_student_url': f"http://localhost:{PORT}/index.html",
+            'local_admin_url': f"http://localhost:{PORT}/admin.html",
+            'network_student_url': f"http://{lan_ip}:{PORT}/index.html",
+            'network_admin_url': f"http://{lan_ip}:{PORT}/admin.html",
+            'api_base': f"http://{lan_ip}:{PORT}"
+        }
+        self.send_response(200)
+        self._send_cors_headers()
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(info).encode('utf-8'))
+
 class ReusableTCPServer(socketserver.TCPServer):
     allow_reuse_address = True
 
 def run_server():
     init_db()
+    lan_ip = get_lan_ip()
     with ReusableTCPServer(("", PORT), DroneAcademyHandler) as httpd:
-        print(f"[🚀] ARC Drone server running at: http://localhost:{PORT}")
-        print(f"[📖] Student App: http://localhost:{PORT}/index.html")
-        print(f"[📊] Admin Dashboard: http://localhost:{PORT}/admin.html")
+        print("=" * 64)
+        print("🚀 ARC Drone Multi-PC SQLite Backend & Web Server")
+        print("=" * 64)
+        print(f"💻 THIS COMPUTER (Localhost):")
+        print(f"   Student App:      http://localhost:{PORT}/index.html")
+        print(f"   Admin Portal:     http://localhost:{PORT}/admin.html")
+        print()
+        print(f"🌐 OTHER PCs ON THIS WI-FI / LAN NETWORK:")
+        print(f"   Student App:      http://{lan_ip}:{PORT}/index.html")
+        print(f"   Admin Portal:     http://{lan_ip}:{PORT}/admin.html")
+        print("=" * 64)
+        print("[*] Ready! Logs and connections will display below:")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

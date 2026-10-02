@@ -258,6 +258,9 @@
         </p>
       </div>
       <div class="admin-actions-wrap" style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-secondary" onclick="openDbConfigModal()" title="Database Connection & Multi-PC Setup" style="border-color:rgba(99,102,241,0.5);color:#A5B4FC">
+          <span>⚙️</span> Database &amp; Multi-PC
+        </button>
         <button class="btn btn-primary" onclick="exportCSV()" title="Export all student records to CSV spreadsheet">
           <span>📥</span> Export CSV
         </button>
@@ -274,7 +277,7 @@
     </header>
 
     <!-- Metric Statistics Cards -->
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem">
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
       <div class="stat-card">
         <div class="stat-icon" style="background:rgba(59,130,246,0.12);color:var(--accent-blue)">👥</div>
         <div>
@@ -296,13 +299,30 @@
           <div style="font-size:28px;font-weight:800;color:var(--accent-violet)" id="metricTotalLessons">0</div>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--accent-amber)">📝</div>
+      <div class="stat-card" style="cursor:pointer;transition:transform 0.2s" onclick="openDbConfigModal()" title="Click to view or change database connection">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.12);color:var(--accent-amber)">🔌</div>
         <div>
-          <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ACTIVE DATABASE</span>
-          <div style="font-size:15px;font-weight:700;color:#F8FAFC" id="metricDbSource">SQLite DB & Local</div>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase">ACTIVE DATABASE</span>
+            <span style="font-size:10px;background:rgba(99,102,241,0.2);color:#A5B4FC;padding:1px 6px;border-radius:4px;font-weight:700">⚙️ Settings</span>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#F8FAFC" id="metricDbSource">Checking connection...</div>
         </div>
       </div>
+    </div>
+
+    <!-- Offline / LocalStorage Alert Banner -->
+    <div id="dbAlertBanner" style="display:none;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:14px;padding:0.9rem 1.25rem;margin-bottom:1.5rem;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:0.75rem">
+        <span style="font-size:22px">⚠️</span>
+        <div style="font-size:13px;color:#FDE68A;line-height:1.5">
+          <strong>Multi-PC Sync Notice: Local Browser Storage Only.</strong><br>
+          Student logins from other computers are not showing here because no Cloud Database or Wi-Fi Server is connected.
+        </div>
+      </div>
+      <button class="btn btn-primary" style="font-size:12px;padding:0.45rem 1rem" onclick="openDbConfigModal()">
+        Connect Cloud / Wi-Fi DB →
+      </button>
     </div>
 
     <!-- Search & Filter Controls -->
@@ -405,6 +425,115 @@
   </div>
 </div>
 
+<!-- Database Connection & Multi-PC Setup Modal -->
+<div class="modal-overlay" id="dbConfigModal">
+  <div class="modal-box" style="max-width:700px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:1rem">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;color:#F8FAFC;display:flex;align-items:center;gap:0.5rem">
+          <span>🔌</span> Database &amp; Multi-PC Hub
+        </h2>
+        <span style="font-size:13px;color:var(--text-secondary)">Connect other computers on Wi-Fi or across the Internet</span>
+      </div>
+      <button onclick="closeDbConfigModal()" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer">&times;</button>
+    </div>
+
+    <!-- Live Connection Status Banner -->
+    <div id="modalStatusBanner" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+      <div>
+        <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase">CURRENT ACTIVE SOURCE</span>
+        <div style="font-size:16px;font-weight:700;margin-top:0.2rem" id="modalActiveSourceText">Checking...</div>
+      </div>
+      <div style="text-align:right">
+        <span style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase">STUDENTS LOADED</span>
+        <div style="font-size:16px;font-weight:800;color:#F8FAFC" id="modalStudentCountText">0 students</div>
+      </div>
+    </div>
+
+    <!-- Section 1: Local Wi-Fi Network Mode (Classroom / Lab) -->
+    <div style="background:#090F1D;border:1px solid rgba(59,130,246,0.25);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
+        <span style="font-size:18px">🏠</span>
+        <h3 style="font-size:15px;font-weight:700;color:#93C5FD;margin:0">Option A: Same Wi-Fi Network (Lab / Classroom PCs)</h3>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem">
+        When your students and this computer are connected to the same Wi-Fi router, share this link with them. All logins and test scores save directly to this machine's SQLite database!
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:0.75rem">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.25rem">STUDENT APP URL (Share with students on this Wi-Fi)</label>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="wifiStudentUrl" class="admin-input" readonly value="http://192.168.1.4:5000/index.html" style="font-family:monospace;font-size:13px;color:#6EE7B7">
+            <button class="btn btn-secondary" onclick="copyInput('wifiStudentUrl')" style="white-space:nowrap">📋 Copy</button>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.25rem">ADMIN PORTAL URL (Open from another PC or phone on this Wi-Fi)</label>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="wifiAdminUrl" class="admin-input" readonly value="http://192.168.1.4:5000/admin.html" style="font-family:monospace;font-size:13px;color:#93C5FD">
+            <button class="btn btn-secondary" onclick="copyInput('wifiAdminUrl')" style="white-space:nowrap">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted)" id="serverPyStatusHint">
+        💡 <em>Make sure <code>python3 server.py</code> is running on this PC. (It runs automatically via Desktop Launchers).</em>
+      </div>
+    </div>
+
+    <!-- Section 2: Global Internet Cloud Sync (GitHub Pages) -->
+    <div style="background:#090F1D;border:1px solid rgba(99,102,241,0.25);border-radius:14px;padding:1.25rem;margin-bottom:1.5rem">
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem">
+        <span style="font-size:18px">🌐</span>
+        <h3 style="font-size:15px;font-weight:700;color:#A5B4FC;margin:0">Option B: Global Internet Cloud Sync (GitHub Pages)</h3>
+      </div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:1rem">
+        Because GitHub Pages is a static host, connecting a free <strong>Google Firebase Realtime Database</strong> allows students from any PC anywhere in the world to sync into your Admin Portal in real time!
+      </p>
+
+      <div style="margin-bottom:0.75rem">
+        <label style="font-size:11px;font-weight:700;color:var(--text-muted);display:block;margin-bottom:0.35rem">FIREBASE REALTIME DATABASE REST URL</label>
+        <div style="display:flex;gap:0.5rem">
+          <input type="text" id="cfgCloudDbUrl" class="admin-input" placeholder="https://your-project-default-rtdb.firebaseio.com" style="font-size:13px">
+          <button class="btn btn-primary" onclick="saveCloudDbUrl()" style="white-space:nowrap">💾 Save</button>
+          <button class="btn btn-secondary" onclick="testCloudDbConnection()" style="white-space:nowrap">⚡ Test</button>
+        </div>
+      </div>
+
+      <div id="cloudTestResult" style="font-size:12px;margin-bottom:0.75rem;min-height:18px"></div>
+
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem">
+        <button class="btn btn-secondary" style="font-size:12px;padding:0.4rem 0.8rem" onclick="pushLocalRecordsToCloud()">
+          📤 Push Local Students to Cloud
+        </button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:0.4rem 0.8rem" onclick="toggleSetupGuide()">
+          📖 How to Create Free Firebase DB (1 Min Guide) ▾
+        </button>
+      </div>
+
+      <!-- Expandable 60-Second Setup Guide -->
+      <div id="firebaseGuideBox" style="display:none;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:1rem;font-size:13px;color:var(--text-secondary);line-height:1.6">
+        <div style="font-weight:700;color:#F8FAFC;margin-bottom:0.5rem">⚡ 60-Second Free Firebase Setup (No Credit Card Needed):</div>
+        <ol style="padding-left:1.25rem;margin:0;display:flex;flex-direction:column;gap:0.35rem">
+          <li>Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener" style="color:var(--accent-blue);text-decoration:underline">console.firebase.google.com</a> with any Google account.</li>
+          <li>Click <strong>"Add project"</strong> &rarr; name it <code>arc-drone</code> &rarr; click Continue.</li>
+          <li>In the left sidebar under <strong>Build</strong>, click <strong>Realtime Database</strong> &rarr; click <strong>Create Database</strong>.</li>
+          <li>Select database location (e.g. Singapore or US) &rarr; Next.</li>
+          <li>Choose <strong>"Start in test mode"</strong> (allows student app to read/write) &rarr; click <strong>Enable</strong>.</li>
+          <li>Copy your Database URL (e.g. <code>https://arc-drone-xxxxx-default-rtdb.firebaseio.com/</code>) and paste it into the box above!</li>
+          <li>Click <strong>Save &amp; Test</strong> &mdash; All PCs will now sync in real-time globally!</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;border-top:1px solid var(--border);padding-top:1.25rem">
+      <button class="btn btn-secondary" onclick="closeDbConfigModal()">Close</button>
+      <button class="btn btn-primary" onclick="fetchStudents(true); closeDbConfigModal()">Apply &amp; Refresh Dashboard</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // DEFAULT ADMIN PASSCODE (Can be changed in localStorage)
 const DEFAULT_PASS = "admin123";
@@ -461,29 +590,257 @@ const CHAPTER_TITLES = [
   "12. Competition Prep, Execution & Conclusion"
 ];
 
+const CLOUD_DB_KEY = 'arcDrone_cloudDbUrl';
+const DEFAULT_CLOUD_DB_URL = "https://arc-drone-academy-default-rtdb.firebaseio.com";
+let currentDbMode = 'unknown'; // 'cloud', 'sqlite', 'local'
 let allStudents = [];
 let isServerOnline = false;
+let detectedLanIp = "192.168.1.4";
+
+function getActiveCloudDbUrl() {
+  const custom = localStorage.getItem(CLOUD_DB_KEY);
+  if (custom && custom.trim()) return custom.trim().replace(/\/$/, '');
+  return DEFAULT_CLOUD_DB_URL.replace(/\/$/, '');
+}
+
+function getLocalServerBase() {
+  if (window.location.port === '5000' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return window.location.origin;
+  }
+  return localStorage.getItem('arcDrone_localServerUrl') || 'http://localhost:5000';
+}
+
+function openDbConfigModal() {
+  const modal = document.getElementById('dbConfigModal');
+  if (modal) {
+    document.getElementById('cfgCloudDbUrl').value = localStorage.getItem(CLOUD_DB_KEY) || DEFAULT_CLOUD_DB_URL;
+    updateModalDbStatus();
+    modal.classList.add('open');
+  }
+}
+
+function closeDbConfigModal() {
+  const modal = document.getElementById('dbConfigModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function copyInput(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) {
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard?.writeText(input.value);
+    alert('Copied to clipboard: ' + input.value);
+  }
+}
+
+function toggleSetupGuide() {
+  const guide = document.getElementById('firebaseGuideBox');
+  if (guide) {
+    guide.style.display = (guide.style.display === 'none' || !guide.style.display) ? 'block' : 'none';
+  }
+}
+
+function saveCloudDbUrl() {
+  const input = document.getElementById('cfgCloudDbUrl').value.trim();
+  if (input) {
+    localStorage.setItem(CLOUD_DB_KEY, input.replace(/\/$/, ''));
+    alert('✓ Cloud Database URL saved! Testing connection now...');
+    testCloudDbConnection();
+    checkServerAndFetch();
+  } else {
+    localStorage.removeItem(CLOUD_DB_KEY);
+    alert('Reset to default Cloud Database URL.');
+    checkServerAndFetch();
+  }
+}
+
+async function testCloudDbConnection() {
+  const inputUrl = (document.getElementById('cfgCloudDbUrl').value || '').trim().replace(/\/$/, '');
+  const resultEl = document.getElementById('cloudTestResult');
+  if (!inputUrl) {
+    resultEl.innerHTML = '<span style="color:var(--accent-rose)">⚠️ Please enter a Firebase / REST URL.</span>';
+    return;
+  }
+
+  resultEl.innerHTML = '<span style="color:var(--accent-blue)">⏳ Testing connection...</span>';
+  try {
+    const t0 = performance.now();
+    // Test write
+    const putRes = await fetch(`${inputUrl}/test_ping.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ping: 'pong', time: new Date().toISOString() })
+    });
+    const t1 = performance.now();
+    if (!putRes.ok) throw new Error(`HTTP ${putRes.status} ${putRes.statusText}`);
+
+    // Test read
+    const getRes = await fetch(`${inputUrl}/test_ping.json`);
+    if (!getRes.ok) throw new Error(`Read failed: HTTP ${getRes.status}`);
+
+    const latency = Math.round(t1 - t0);
+    resultEl.innerHTML = `<span style="color:var(--accent-emerald);font-weight:600">✅ Cloud Database is LIVE & WRITABLE! (${latency}ms latency).</span>`;
+  } catch (err) {
+    resultEl.innerHTML = `<span style="color:var(--accent-rose)">❌ Connection failed: ${err.message}<br><small style="color:var(--text-muted)">Tip: In Firebase Realtime Database &gt; Rules, set <code>{".read": true, ".write": true}</code> for testing.</small></span>`;
+  }
+}
+
+async function pushLocalRecordsToCloud() {
+  const cloudUrl = getActiveCloudDbUrl();
+  if (!cloudUrl) {
+    alert('Please save a Cloud Database URL first.');
+    return;
+  }
+  const localDb = JSON.parse(localStorage.getItem('droneAcademy_allStudents') || '[]');
+  if (localDb.length === 0) {
+    alert('No local student records found to push.');
+    return;
+  }
+
+  let count = 0;
+  for (const s of localDb) {
+    if (!s.email) continue;
+    const safeKey = encodeURIComponent(s.email.toLowerCase().replace(/[.#$\[\]\/]/g, '_'));
+    try {
+      await fetch(`${cloudUrl}/students/${safeKey}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(s)
+      });
+      count++;
+    } catch (e) {}
+  }
+  alert(`✓ Pushed ${count} student records to Cloud Database!`);
+  checkServerAndFetch();
+}
+
+function updateModalDbStatus() {
+  const textEl = document.getElementById('modalActiveSourceText');
+  const countEl = document.getElementById('modalStudentCountText');
+  if (textEl) {
+    if (currentDbMode === 'cloud') {
+      textEl.innerHTML = '<span style="color:var(--accent-emerald)">🟢 Cloud Database (Firebase)</span>';
+    } else if (currentDbMode === 'sqlite') {
+      textEl.innerHTML = '<span style="color:var(--accent-emerald)">🟢 Local SQLite Server (server.py)</span>';
+    } else {
+      textEl.innerHTML = '<span style="color:var(--accent-amber)">🟡 Local Browser Only (Offline)</span>';
+    }
+  }
+  if (countEl) {
+    countEl.textContent = `${allStudents.length} student${allStudents.length === 1 ? '' : 's'}`;
+  }
+}
 
 async function checkServerAndFetch() {
-  try {
-    const res = await fetch('/api/students', { method: 'GET' });
-    if (res.ok) {
-      const data = await res.json();
-      allStudents = data.students || [];
-      isServerOnline = true;
-      document.getElementById('metricDbSource').textContent = 'SQLite (server.py)';
-      document.getElementById('metricDbSource').style.color = 'var(--accent-emerald)';
-    } else {
-      throw new Error('Server returned non-200');
+  let fetchedStudents = null;
+  let sourceText = '';
+  let sourceColor = 'var(--text-muted)';
+  let isCloudSuccess = false;
+
+  // 1. Try Cloud Database (Firebase / REST API)
+  const cloudUrl = getActiveCloudDbUrl();
+  if (cloudUrl) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(`${cloudUrl}/students.json`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        isCloudSuccess = true;
+        currentDbMode = 'cloud';
+        sourceText = 'Cloud DB (Firebase)';
+        sourceColor = 'var(--accent-emerald)';
+        isServerOnline = true;
+        if (data && typeof data === 'object') {
+          fetchedStudents = Object.values(data);
+        } else {
+          fetchedStudents = [];
+        }
+      }
+    } catch (e) {
+      console.warn('Cloud DB not reachable:', e.message);
     }
-  } catch (err) {
-    // Fallback to localStorage shared database
-    isServerOnline = false;
-    document.getElementById('metricDbSource').textContent = 'Local Database (Browser)';
-    document.getElementById('metricDbSource').style.color = 'var(--accent-blue)';
-    loadFromLocalStorage();
   }
+
+  // 2. If Cloud not reached, try Local SQLite Server (server.py)
+  if (!isCloudSuccess) {
+    try {
+      const serverBase = getLocalServerBase();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+      const res = await fetch(`${serverBase}/api/students`, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res.ok) {
+        const data = await res.json();
+        fetchedStudents = data.students || [];
+        isServerOnline = true;
+        currentDbMode = 'sqlite';
+        sourceText = 'SQLite (server.py)';
+        sourceColor = 'var(--accent-emerald)';
+      }
+    } catch (err) {
+      // Local server offline
+    }
+  }
+
+  // 3. Fallback: LocalStorage
+  const alertBanner = document.getElementById('dbAlertBanner');
+  if (fetchedStudents !== null) {
+    allStudents = fetchedStudents;
+    // Cache to localStorage
+    localStorage.setItem('droneAcademy_allStudents', JSON.stringify(allStudents));
+    if (alertBanner) alertBanner.style.display = 'none';
+  } else {
+    currentDbMode = 'local';
+    sourceText = 'Local Browser Only (Offline)';
+    sourceColor = 'var(--accent-amber)';
+    isServerOnline = false;
+    loadFromLocalStorage();
+    if (alertBanner) alertBanner.style.display = 'flex';
+  }
+
+  const badge = document.getElementById('metricDbSource');
+  if (badge) {
+    badge.textContent = sourceText;
+    badge.style.color = sourceColor;
+  }
+
+  updateModalDbStatus();
+
+  // Also query server network info to update Wi-Fi URLs
+  fetchNetworkInfo();
+
   updateStatsAndTable();
+}
+
+async function fetchNetworkInfo() {
+  try {
+    const serverBase = getLocalServerBase();
+    const res = await fetch(`${serverBase}/api/network-info`);
+    if (res.ok) {
+      const info = await res.json();
+      if (info && info.lan_ip) {
+        detectedLanIp = info.lan_ip;
+        const studentUrl = document.getElementById('wifiStudentUrl');
+        const adminUrl = document.getElementById('wifiAdminUrl');
+        if (studentUrl) studentUrl.value = info.network_student_url;
+        if (adminUrl) adminUrl.value = info.network_admin_url;
+        const hint = document.getElementById('serverPyStatusHint');
+        if (hint) {
+          hint.innerHTML = `🟢 <strong>Server Active:</strong> Running on port 5000 (LAN IP: <code>${info.lan_ip}</code>)`;
+          hint.style.color = 'var(--accent-emerald)';
+        }
+      }
+    }
+  } catch (e) {
+    const hint = document.getElementById('serverPyStatusHint');
+    if (hint) {
+      hint.innerHTML = `💡 <em>Local server.py is offline. Start it on this PC (<code>python3 server.py</code>) to enable Wi-Fi sharing.</em>`;
+      hint.style.color = 'var(--text-muted)';
+    }
+  }
 }
 
 function loadFromLocalStorage() {
@@ -719,9 +1076,20 @@ function submitImport() {
 async function resetStudent(email) {
   if (!confirm(`Are you sure you want to reset all course progress and scores for ${email}?`)) return;
 
+  const cloudUrl = getActiveCloudDbUrl();
+  if (cloudUrl) {
+    try {
+      const safeKey = encodeURIComponent(email.toLowerCase().replace(/[.#$\[\]\/]/g, '_'));
+      await fetch(`${cloudUrl}/students/${safeKey}.json`, { method: 'DELETE' });
+    } catch (e) {
+      console.warn('Cloud reset failed:', e);
+    }
+  }
+
   if (isServerOnline) {
     try {
-      await fetch('/api/reset', {
+      const serverBase = getLocalServerBase();
+      await fetch(`${serverBase}/api/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

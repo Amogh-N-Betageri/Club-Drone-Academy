@@ -1382,6 +1382,34 @@ const CHAPTER_QNA = {
 let currentUser = JSON.parse(localStorage.getItem('droneAcademy_activeUser') || 'null');
 let userQnaScores = JSON.parse(localStorage.getItem('clubDroneAcademy_qna') || '{}');
 
+// Database & Multi-PC Synchronization
+const CLOUD_DB_KEY = 'arcDrone_cloudDbUrl';
+const DEFAULT_CLOUD_DB_URL = "https://arc-drone-academy-default-rtdb.firebaseio.com";
+
+function getActiveCloudDbUrl() {
+  try {
+    if (typeof window !== 'undefined' && window.location && window.location.search) {
+      const urlParam = new URLSearchParams(window.location.search).get('db');
+      if (urlParam && urlParam.trim()) {
+        localStorage.setItem(CLOUD_DB_KEY, urlParam.trim().replace(/\/$/, ''));
+        return urlParam.trim().replace(/\/$/, '');
+      }
+    }
+  } catch (e) {}
+  const custom = typeof localStorage !== 'undefined' ? localStorage.getItem(CLOUD_DB_KEY) : null;
+  if (custom && custom.trim()) return custom.trim().replace(/\/$/, '');
+  return DEFAULT_CLOUD_DB_URL.replace(/\/$/, '');
+}
+
+function getLocalServerBase() {
+  if (typeof window !== 'undefined' && window.location) {
+    if (window.location.port === '5000' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return window.location.origin;
+    }
+  }
+  return (typeof localStorage !== 'undefined' && localStorage.getItem('arcDrone_localServerUrl')) || 'http://localhost:5000';
+}
+
 
 function getQnaSectionHtml(id) {
   const questions = CHAPTER_QNA[id];
@@ -1514,9 +1542,35 @@ async function submitLogin() {
   document.getElementById('loginModal').classList.remove('open');
   updateHeaderProfile();
 
-  // Attempt sync with server
+  // 1. Attempt to restore student progress from Cloud Database (for cross-PC continuity)
+  const cloudUrl = getActiveCloudDbUrl();
+  if (cloudUrl) {
+    try {
+      const safeKey = encodeURIComponent(email.toLowerCase().replace(/[.#$\[\]\/]/g, '_'));
+      const res = await fetch(`${cloudUrl}/students/${safeKey}.json`);
+      if (res.ok) {
+        const remote = await res.json();
+        if (remote) {
+          if (remote.completed_chapters && remote.completed_chapters.length > 0) {
+            remote.completed_chapters.forEach(ch => progress[ch] = true);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+          }
+          if (remote.qna_scores && Object.keys(remote.qna_scores).length > 0) {
+            userQnaScores = Object.assign(userQnaScores, remote.qna_scores);
+            localStorage.setItem('clubDroneAcademy_qna', JSON.stringify(userQnaScores));
+          }
+          updateCourseProgress();
+        }
+      }
+    } catch (e) {
+      console.log('Cloud DB login check skipped:', e.message);
+    }
+  }
+
+  // 2. Attempt sync with local Python SQLite server
   try {
-    const res = await fetch('/api/login', {
+    const serverBase = getLocalServerBase();
+    const res = await fetch(`${serverBase}/api/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email })
@@ -1524,11 +1578,9 @@ async function submitLogin() {
     if (res.ok) {
       const data = await res.json();
       if (data.student) {
-        // Merge progress from server if exists
         if (data.student.completed_chapters && data.student.completed_chapters.length > 0) {
           data.student.completed_chapters.forEach(ch => progress[ch] = true);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  syncWithDatabase();
         }
         if (data.student.qna_scores && Object.keys(data.student.qna_scores).length > 0) {
           userQnaScores = Object.assign(userQnaScores, data.student.qna_scores);
@@ -1538,7 +1590,7 @@ async function submitLogin() {
       }
     }
   } catch (e) {
-    console.log('Server offline; using local database storage');
+    console.log('Local server offline; using local database storage');
   }
 
   syncWithDatabase();
@@ -1549,10 +1601,75 @@ async function submitLogin() {
 function promptSwitchUser() {
   const name = currentUser ? currentUser.name : '';
   const email = currentUser ? currentUser.email : '';
-  if (confirm(`Currently signed in as: ${name} (${email})\n\nDo you want to switch student profile or sign in as someone else?`)) {
+  
+  const action = prompt(
+    `STUDENT PROFILE: ${name} (${email})\n\n` +
+    `Choose an action:\n` +
+    `1. Type 'switch' to sign in as a different student.\n` +
+    `2. Type 'export' to copy your progress backup code.\n` +
+    `3. Type 'import' to paste a progress backup code from another PC.\n` +
+    `4. Type 'server' to set instructor Wi-Fi server address (e.g. http://192.168.1.4:5000).\n` +
+    `5. Type 'cloud' to set Cloud Database URL (Firebase).`
+  );
+
+  if (!action) return;
+  const choice = action.trim().toLowerCase();
+
+  if (choice === 'switch' || choice === '1') {
     document.getElementById('loginName').value = '';
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginModal').classList.add('open');
+  } else if (choice === 'export' || choice === '2') {
+    const backup = {
+      user: currentUser,
+      progress: progress,
+      qna: userQnaScores,
+      exportedAt: new Date().toISOString()
+    };
+    const token = btoa(unescape(encodeURIComponent(JSON.stringify(backup))));
+    navigator.clipboard?.writeText(token);
+    prompt('Your Progress Backup Code (Copied to Clipboard! Save or send to another PC):', token);
+  } else if (choice === 'import' || choice === '3') {
+    const token = prompt('Paste your Progress Backup Code from another PC:');
+    if (token) {
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(token.trim()))));
+        if (decoded.user && decoded.user.email) {
+          currentUser = decoded.user;
+          localStorage.setItem('droneAcademy_activeUser', JSON.stringify(currentUser));
+        }
+        if (decoded.progress) {
+          progress = decoded.progress;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        }
+        if (decoded.qna) {
+          userQnaScores = decoded.qna;
+          localStorage.setItem('clubDroneAcademy_qna', JSON.stringify(userQnaScores));
+        }
+        updateHeaderProfile();
+        updateCourseProgress();
+        syncWithDatabase();
+        alert('✓ Student progress successfully restored on this computer!');
+      } catch (err) {
+        alert('Invalid backup code: ' + err.message);
+      }
+    }
+  } else if (choice === 'server' || choice === '4') {
+    const currentServer = localStorage.getItem('arcDrone_localServerUrl') || 'http://192.168.1.4:5000';
+    const newServer = prompt("Enter your instructor's local Wi-Fi server address:", currentServer);
+    if (newServer !== null && newServer.trim()) {
+      localStorage.setItem('arcDrone_localServerUrl', newServer.trim().replace(/\/$/, ''));
+      alert(`Server address updated to: ${newServer.trim()}\nSyncing now...`);
+      syncWithDatabase();
+    }
+  } else if (choice === 'cloud' || choice === '5') {
+    const currentCloud = localStorage.getItem(CLOUD_DB_KEY) || DEFAULT_CLOUD_DB_URL;
+    const newCloud = prompt("Enter Firebase Realtime Database REST URL:", currentCloud);
+    if (newCloud !== null && newCloud.trim()) {
+      localStorage.setItem(CLOUD_DB_KEY, newCloud.trim().replace(/\/$/, ''));
+      alert(`Cloud Database URL updated to: ${newCloud.trim()}\nSyncing now...`);
+      syncWithDatabase();
+    }
   }
 }
 
@@ -1574,7 +1691,7 @@ async function syncWithDatabase() {
   const completedList = Object.keys(progress).filter(k => progress[k]);
   const overallPct = Math.round((completedList.length / CHAPTERS.length) * 100);
 
-  // 1. Sync to local database storage (all students)
+  // 1. Sync to local database storage (all students in this browser)
   const localDb = JSON.parse(localStorage.getItem('droneAcademy_allStudents') || '[]');
   const idx = localDb.findIndex(s => s.email.toLowerCase() === currentUser.email.toLowerCase());
   const record = {
@@ -1593,9 +1710,25 @@ async function syncWithDatabase() {
 
   localStorage.setItem('droneAcademy_allStudents', JSON.stringify(localDb));
 
-  // 2. Sync to Python SQLite server API if accessible
+  // 2. Sync to Cloud Database (Firebase Realtime Database REST API)
+  const cloudUrl = getActiveCloudDbUrl();
+  if (cloudUrl) {
+    try {
+      const safeKey = encodeURIComponent(currentUser.email.toLowerCase().replace(/[.#$\[\]\/]/g, '_'));
+      await fetch(`${cloudUrl}/students/${safeKey}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record)
+      });
+    } catch (e) {
+      // Cloud offline fallback
+    }
+  }
+
+  // 3. Sync to Python SQLite server API if accessible
   try {
-    await fetch('/api/progress', {
+    const serverBase = getLocalServerBase();
+    await fetch(`${serverBase}/api/progress`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1606,7 +1739,7 @@ async function syncWithDatabase() {
       })
     });
   } catch (e) {
-    // Server offline, silent fallback
+    // Local server offline fallback
   }
 }
 

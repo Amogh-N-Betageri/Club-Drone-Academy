@@ -1,5 +1,8 @@
 #!/bin/bash
-# Club Drone Academy SQLite API Server
+# ARC Drone Multi-PC SQLite API Server
 cd /home/amogh/projects/Club/Drone
-echo "[*] Starting Club Drone Academy SQLite Server on port 5000..."
+echo "=============================================================="
+echo "🚀 Starting ARC Drone SQLite API Server on port 5000..."
+echo "=============================================================="
 python3 server.py
+

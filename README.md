@@ -89,8 +89,25 @@ Tutorials from **Joshua Bardwell** are embedded directly adjacent to their speci
 
 ---
 
-## 💻 Local Desktop Access
+## 💻 Local Desktop Access & Multi-PC Sharing
 
-- **Student App:** Double-click [`ClubDroneAcademy.desktop`](file:///home/amogh/Desktop/ClubDroneAcademy.desktop)
-- **Instructor Dashboard:** Double-click [`DroneAcademyAdmin.desktop`](file:///home/amogh/Desktop/DroneAcademyAdmin.desktop)
-- **Local SQLite Server:** `python3 server.py` (Runs automatically on port 5000 via launchers)
+- **Student App (This PC):** Double-click [`ClubDroneAcademy.desktop`](file:///home/amogh/Desktop/ClubDroneAcademy.desktop) or open `http://localhost:5000/index.html`
+- **Instructor Dashboard (This PC):** Double-click [`DroneAcademyAdmin.desktop`](file:///home/amogh/Desktop/DroneAcademyAdmin.desktop) or open `http://localhost:5000/admin.html`
+- **Start Local Server:** `python3 server.py` (Runs on port 5000 with SQLite database `drone_academy.db`)
+
+### 🏠 Connecting Other PCs on the Same Wi-Fi Network (Lab / Classroom)
+When students and the instructor are on the same Wi-Fi:
+1. Run `python3 server.py` on the instructor's PC (detects your Wi-Fi IP automatically, e.g. `192.168.1.4`).
+2. Students on other computers or phones open:  
+   👉 `http://<YOUR_IP>:5000/index.html` (e.g. `http://192.168.1.4:5000/index.html`)
+3. The instructor opens:  
+   👉 `http://<YOUR_IP>:5000/admin.html` (or `http://localhost:5000/admin.html`)
+4. All student logins, lessons mastered, and Q&A scores sync directly into the instructor's SQLite database in real time!
+
+### 🌐 Connecting Other PCs Across the Internet (GitHub Pages + Cloud Database)
+Because GitHub Pages is a static host, you can connect a **free Google Firebase Realtime Database**:
+1. Go to [console.firebase.google.com](https://console.firebase.google.com/) and create a free project (`arc-drone`).
+2. In the sidebar under **Build**, click **Realtime Database** &rarr; **Create Database** &rarr; select **"Start in test mode"**.
+3. Copy your database URL (`https://your-project-default-rtdb.firebaseio.com/`).
+4. In the Admin Portal, click **⚙️ Database & Multi-PC** &rarr; paste the URL into **Cloud Database URL** &rarr; click **Save & Test**.
+5. All students accessing via GitHub Pages will now sync their progress and appear in your Admin Portal globally!
