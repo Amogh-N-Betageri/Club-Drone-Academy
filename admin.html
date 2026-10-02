@@ -591,16 +591,28 @@ const CHAPTER_TITLES = [
 ];
 
 const CLOUD_DB_KEY = 'arcDrone_cloudDbUrl';
-const DEFAULT_CLOUD_DB_URL = "https://arc-drone-academy-default-rtdb.firebaseio.com";
+const DEFAULT_CLOUD_DB_URL = "https://arc-drone-default-rtdb.asia-southeast1.firebasedatabase.app";
 let currentDbMode = 'unknown'; // 'cloud', 'sqlite', 'local'
 let allStudents = [];
 let isServerOnline = false;
 let detectedLanIp = "192.168.1.4";
 
+function sanitizeFirebaseUrl(url) {
+  if (!url) return '';
+  url = url.trim();
+  // If user pasted the browser console URL instead of the database endpoint
+  if (url.includes('console.firebase.google.com') || url.includes('database/')) {
+    if (url.includes('arc-drone-default-rtdb')) {
+      return "https://arc-drone-default-rtdb.asia-southeast1.firebasedatabase.app";
+    }
+  }
+  return url.replace(/\/$/, '');
+}
+
 function getActiveCloudDbUrl() {
   const custom = localStorage.getItem(CLOUD_DB_KEY);
-  if (custom && custom.trim()) return custom.trim().replace(/\/$/, '');
-  return DEFAULT_CLOUD_DB_URL.replace(/\/$/, '');
+  if (custom && custom.trim()) return sanitizeFirebaseUrl(custom);
+  return DEFAULT_CLOUD_DB_URL;
 }
 
 function getLocalServerBase() {
@@ -613,7 +625,7 @@ function getLocalServerBase() {
 function openDbConfigModal() {
   const modal = document.getElementById('dbConfigModal');
   if (modal) {
-    document.getElementById('cfgCloudDbUrl').value = localStorage.getItem(CLOUD_DB_KEY) || DEFAULT_CLOUD_DB_URL;
+    document.getElementById('cfgCloudDbUrl').value = getActiveCloudDbUrl();
     updateModalDbStatus();
     modal.classList.add('open');
   }
@@ -642,21 +654,26 @@ function toggleSetupGuide() {
 }
 
 function saveCloudDbUrl() {
-  const input = document.getElementById('cfgCloudDbUrl').value.trim();
+  let input = document.getElementById('cfgCloudDbUrl').value.trim();
+  input = sanitizeFirebaseUrl(input);
   if (input) {
-    localStorage.setItem(CLOUD_DB_KEY, input.replace(/\/$/, ''));
+    localStorage.setItem(CLOUD_DB_KEY, input);
+    document.getElementById('cfgCloudDbUrl').value = input;
     alert('✓ Cloud Database URL saved! Testing connection now...');
     testCloudDbConnection();
     checkServerAndFetch();
   } else {
     localStorage.removeItem(CLOUD_DB_KEY);
+    document.getElementById('cfgCloudDbUrl').value = DEFAULT_CLOUD_DB_URL;
     alert('Reset to default Cloud Database URL.');
     checkServerAndFetch();
   }
 }
 
 async function testCloudDbConnection() {
-  const inputUrl = (document.getElementById('cfgCloudDbUrl').value || '').trim().replace(/\/$/, '');
+  let inputUrl = (document.getElementById('cfgCloudDbUrl').value || '').trim();
+  inputUrl = sanitizeFirebaseUrl(inputUrl);
+  document.getElementById('cfgCloudDbUrl').value = inputUrl;
   const resultEl = document.getElementById('cloudTestResult');
   if (!inputUrl) {
     resultEl.innerHTML = '<span style="color:var(--accent-rose)">⚠️ Please enter a Firebase / REST URL.</span>';

@@ -1384,7 +1384,7 @@ let userQnaScores = JSON.parse(localStorage.getItem('clubDroneAcademy_qna') || '
 
 // Database & Multi-PC Synchronization
 const CLOUD_DB_KEY = 'arcDrone_cloudDbUrl';
-const DEFAULT_CLOUD_DB_URL = "https://arc-drone-academy-default-rtdb.firebaseio.com";
+const DEFAULT_CLOUD_DB_URL = "https://arc-drone-default-rtdb.asia-southeast1.firebasedatabase.app";
 
 function getActiveCloudDbUrl() {
   try {
